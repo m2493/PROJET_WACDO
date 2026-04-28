@@ -43,7 +43,7 @@ function Login() {
           onChange={(e) => setMotDePasse(e.target.value)}
         />
 
-        <button type="submit">Connexion</button>
+        <button type="submit">Connexionn</button>
       </form>
 
       <p>{error}</p>
