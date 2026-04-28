@@ -24,5 +24,7 @@ public class AffectationDTO {
     private String restaurantCity;
     private String restaurantPostalCode;
 
+    /*test*/
+
 }
 
