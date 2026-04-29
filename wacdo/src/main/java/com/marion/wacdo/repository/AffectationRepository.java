@@ -2,6 +2,7 @@ package com.marion.wacdo.repository;
 
 import com.marion.wacdo.entities.Affectation;
 import com.marion.wacdo.entities.Collaborator;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -62,4 +63,6 @@ public interface AffectationRepository extends JpaRepository<Affectation, Long> 
             @Param("endDate") LocalDate endDate,
             @Param("city") String city
     );
+
+    boolean existsByCollaboratorIdAndRestaurantIdAndJobIdAndEndDateAffectationIsNull(@NotNull Long collaboratorId, @NotNull Long restaurantId, @NotNull Long jobId);
 }

@@ -16,7 +16,8 @@ import EditCollaboratorPage from "./pages/Collaborator/EditCollaboratorPage";
 import Function from "./pages/Function/Functions";
 import CreateFunctionPage from "./pages/Function/CreateFunctionPage";
 
-import Affectation from "./pages/Affectations";
+import Affectation from "./pages/Affectation/Affectations.jsx";
+import EditAffectationPage from "./pages/Affectation/EditAffectationPage"
 import Navbar from "./pages/Navbar";
 
 
@@ -91,6 +92,11 @@ function App() {
               </ProtectedRoute>
             }
           />
+
+            <Route
+                path="/affectations/:id/edit"
+                element={<EditAffectationPage />}
+            />
 
 
 

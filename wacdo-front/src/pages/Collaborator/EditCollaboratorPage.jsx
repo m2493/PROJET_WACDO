@@ -16,7 +16,7 @@ export default function EditCollaboratorPage() {
 
   const [affectation, setAffectation] = useState({
     restaurantId: "",
-    jobTitle: "",
+    jobId: "",
     startDateAffectation: ""
   });
 
@@ -82,13 +82,13 @@ export default function EditCollaboratorPage() {
       // 2. créer affectation si remplie
       if (
         affectation.restaurantId &&
-        affectation.jobTitle &&
+        affectation.jobId &&
         affectation.startDateAffectation
       ) {
         await api.post("/api/affectations", {
           collaboratorId: id,
           restaurantId: affectation.restaurantId,
-          jobTitle: affectation.jobTitle,
+          jobId: Number(affectation.jobId),
           startDateAffectation:
             affectation.startDateAffectation
         });
@@ -172,8 +172,8 @@ export default function EditCollaboratorPage() {
           </select>
 
           <select
-  name="jobTitle"
-  value={affectation.jobTitle}
+  name="jobId"
+  value={affectation.jobId}
   onChange={handleAffectationChange}
   className="w-full border p-2 rounded"
 >
@@ -182,7 +182,7 @@ export default function EditCollaboratorPage() {
   </option>
 
   {jobTitles.map((job, index) => (
-    <option key={job.id} value={job.labelFunction}>
+    <option key={job.id} value={job.id}>
   {job.labelFunction}
 </option>
   ))}

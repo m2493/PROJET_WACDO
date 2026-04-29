@@ -90,9 +90,20 @@ public class AffectationServiceImpl implements AffectationService {
         var job = jobRepository.findById(dto.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
 
-        // Vérifie qu'il n'y a pas déjà une affectation active
+        /*// Vérifie qu'il n'y a pas déjà une affectation active
         if (affectationRepository.existsByCollaboratorIdAndEndDateAffectationIsNull(collaborator.getId())) {
             throw new RuntimeException("Collaborator already has an active assignment");
+        }*/
+
+        boolean exists =
+                affectationRepository.existsByCollaboratorIdAndRestaurantIdAndJobIdAndEndDateAffectationIsNull(
+                        dto.getCollaboratorId(),
+                        dto.getRestaurantId(),
+                        dto.getJobId()
+                );
+
+        if(exists){
+            throw new RuntimeException("Cette affectation existe déjà");
         }
 
         Affectation affectation = new Affectation();

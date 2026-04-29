@@ -84,11 +84,21 @@ export default function CollaboratorDetailPage() {
         </h2>
 
         {current.map(a => (
-          <Card
-            key={a.id}
-            title={a.jobTitle}
-            subtitle={`Début : ${a.startDateAffectation}`}
-          />
+            <div key={a.id} className="mb-3">
+              <Card
+                  title={a.jobTitle}
+                  subtitle={`Début : ${a.startDateAffectation}`}
+              />
+
+              <div className="mt-2 flex justify-end">
+                <button
+                    onClick={() => navigate(`/affectations/${a.id}/edit`)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                >
+                  Modifier
+                </button>
+              </div>
+            </div>
         ))}
       </div>
 
@@ -98,11 +108,21 @@ export default function CollaboratorDetailPage() {
         </h2>
 
         {history.map(a => (
-          <Card
-            key={a.id}
-            title={a.jobTitle}
-            subtitle={`Du ${a.startDateAffectation} au ${a.endDateAffectation}`}
-          />
+            <div key={a.id} className="mb-3">
+              <Card
+                  title={a.jobTitle}
+                  subtitle={`Du ${a.startDateAffectation} au ${a.endDateAffectation}`}
+              />
+
+              <div className="mt-2 flex justify-end">
+                <button
+                    onClick={() => navigate(`/affectations/${a.id}/edit`)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                >
+                  Modifier
+                </button>
+              </div>
+            </div>
         ))}
 
 
@@ -111,7 +131,7 @@ export default function CollaboratorDetailPage() {
     onClick={() => navigate(`/collaborators/${id}/edit`)}
     className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
   >
-    Modifier / Affecter un nouveau poste
+    Affecter un nouveau poste
   </button>
 </div>
 
