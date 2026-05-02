@@ -2,78 +2,119 @@ import { useEffect, useState } from "react";
 import api from "../api/axios";
 
 export default function AssignCollaboratorForm({ onAssign }) {
+    const [collaborators, setCollaborators] = useState([]);
+    const [jobs, setJobs] = useState([]);
 
-  const [collaborators, setCollaborators] = useState([]);
-  const [jobs, setJobs] = useState([]);
+    const [collaboratorId, setCollaboratorId] = useState("");
+    const [jobId, setJobId] = useState("");
+    const [startDate, setStartDate] = useState("");
 
-  const [collaboratorId, setCollaboratorId] = useState("");
-  const [jobId, setJobId] = useState("");
-  const [startDate, setStartDate] = useState("");
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+    useEffect(() => {
+        loadData();
+    }, []);
 
-  const loadData = async () => {
-    const resC = await api.get("/api/collaborators/non-affectes");
-    setCollaborators(resC.data);
+    const loadData = async () => {
+        try {
+            const [resC, resJ] = await Promise.all([
+                api.get("/api/collaborators/non-affectes"),
+                api.get("/api/jobs")
+            ]);
 
-    const resJ = await api.get("/api/jobs");
-    setJobs(resJ.data);
+            setCollaborators(resC.data);
+            setJobs(resJ.data);
 
-    setStartDate(new Date().toISOString().split("T")[0]);
-  };
+            setStartDate(new Date().toISOString().split("T")[0]);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-    onAssign({
-      collaboratorId: Number(collaboratorId),
-      jobId: Number(jobId),
-      startDate
-    });
-  };
+        onAssign({
+            collaboratorId: Number(collaboratorId),
+            jobId: Number(jobId),
+            startDate
+        });
+    };
 
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    if (loading) {
+        return <p className="text-sm text-gray-500">Chargement du formulaire...</p>;
+    }
 
-      <select
-        value={collaboratorId}
-        onChange={(e) => setCollaboratorId(e.target.value)}
-        required
-      >
-        <option value="">-- Collaborateur --</option>
-        {collaborators.map(c => (
-          <option key={c.id} value={c.id}>
-            {c.firstname} {c.lastname}
-          </option>
-        ))}
-      </select>
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
 
-      <select
-        value={jobId}
-        onChange={(e) => setJobId(e.target.value)}
-        required
-      >
-        <option value="">-- Poste --</option>
-        {jobs.map(j => (
-          <option key={j.id} value={j.id}>
-            {j.title}
-          </option>
-        ))}
-      </select>
+            {/* Collaborateur */}
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    Collaborateur
+                </label>
 
-      <input
-        type="date"
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        required
-      />
+                <select
+                    value={collaboratorId}
+                    onChange={(e) => setCollaboratorId(e.target.value)}
+                    required
+                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                >
+                    <option value="">-- Choisir un collaborateur --</option>
+                    {collaborators.map((c) => (
+                        <option key={c.id} value={c.id}>
+                            {c.firstname} {c.lastname}
+                        </option>
+                    ))}
+                </select>
+            </div>
 
-      <button className="bg-green-600 text-white px-4 py-2 rounded">
-        Affecter
-      </button>
+            {/* Poste */}
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    Poste
+                </label>
 
-    </form>
-  );
+                <select
+                    value={jobId}
+                    onChange={(e) => setJobId(e.target.value)}
+                    required
+                    className="w-full border rounded-lg px-3 py-2 bg-white"
+                >
+                    <option value="">-- Choisir un poste --</option>
+                    {jobs.map((j) => (
+                        <option key={j.id} value={j.id}>
+                            {j.title}
+                        </option>
+                    ))}
+                </select>
+            </div>
+
+            {/* Date */}
+            <div>
+                <label className="block text-sm font-medium mb-1">
+                    Date de début
+                </label>
+
+                <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    required
+                    className="w-full border rounded-lg px-3 py-2"
+                />
+            </div>
+
+            {/* Submit */}
+            <button
+                type="submit"
+                disabled={!collaboratorId || !jobId}
+                className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
+            >
+                Affecter
+            </button>
+        </form>
+    );
 }

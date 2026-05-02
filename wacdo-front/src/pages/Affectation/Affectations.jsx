@@ -1,6 +1,17 @@
 import { useState } from "react";
 import api from "../../api/axios";
 import Card from "../../components/Card";
+import {
+    Box,
+    Heading,
+    Text,
+    Input,
+    Button,
+    SimpleGrid,
+    VStack,
+    HStack,
+    Spinner
+} from "@chakra-ui/react";
 
 export default function AffectationSearchPage() {
     const [filters, setFilters] = useState({
@@ -24,12 +35,9 @@ export default function AffectationSearchPage() {
         setLoading(true);
 
         try {
-            const params = {};
-
-            if (filters.jobTitle) params.jobTitle = filters.jobTitle;
-            if (filters.city) params.city = filters.city;
-            if (filters.startDate) params.startDate = filters.startDate;
-            if (filters.endDate) params.endDate = filters.endDate;
+            const params = Object.fromEntries(
+                Object.entries(filters).filter(([, v]) => v)
+            );
 
             const res = await api.get("/api/affectations/search", {
                 params
@@ -54,86 +62,103 @@ export default function AffectationSearchPage() {
     }
 
     return (
-        <div className="p-6 space-y-6">
+        <Box p={6} spaceY={6}>
 
-            <h1 className="text-2xl font-bold">
-                Recherche des affectations
-            </h1>
+            {/* HEADER */}
+            <Box>
+                <Heading size="lg">Recherche des affectations</Heading>
+                <Text fontSize="sm" color="gray.500">
+                    Filtre les affectations selon plusieurs critères
+                </Text>
+            </Box>
 
-            {/* FILTRES */}
-            <div className="grid grid-cols-2 gap-4 bg-white p-4 shadow rounded">
+            {/* FILTER PANEL */}
+            <Box bg="white" p={5} rounded="xl" shadow="md">
+                <VStack spacing={4} align="stretch">
 
-                <input
-                    name="jobTitle"
-                    placeholder="Poste"
-                    value={filters.jobTitle}
-                    onChange={handleChange}
-                    className="border p-2 rounded"
-                />
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
 
-                <input
-                    name="city"
-                    placeholder="Ville"
-                    value={filters.city}
-                    onChange={handleChange}
-                    className="border p-2 rounded"
-                />
+                        <Box>
+                            <Text fontSize="sm" mb={1}>Poste</Text>
+                            <Input
+                                name="jobTitle"
+                                placeholder="Ex: Manager"
+                                value={filters.jobTitle}
+                                onChange={handleChange}
+                            />
+                        </Box>
 
-                <input
-                    type="date"
-                    name="startDate"
-                    value={filters.startDate}
-                    onChange={handleChange}
-                    className="border p-2 rounded"
-                />
+                        <Box>
+                            <Text fontSize="sm" mb={1}>Ville</Text>
+                            <Input
+                                name="city"
+                                placeholder="Ex: Paris"
+                                value={filters.city}
+                                onChange={handleChange}
+                            />
+                        </Box>
 
-                <input
-                    type="date"
-                    name="endDate"
-                    value={filters.endDate}
-                    onChange={handleChange}
-                    className="border p-2 rounded"
-                />
+                        <Box>
+                            <Text fontSize="sm" mb={1}>Date début</Text>
+                            <Input
+                                type="date"
+                                name="startDate"
+                                value={filters.startDate}
+                                onChange={handleChange}
+                            />
+                        </Box>
 
-            </div>
+                        <Box>
+                            <Text fontSize="sm" mb={1}>Date fin</Text>
+                            <Input
+                                type="date"
+                                name="endDate"
+                                value={filters.endDate}
+                                onChange={handleChange}
+                            />
+                        </Box>
 
-            {/* BUTTONS */}
-            <div className="flex gap-3">
-                <button
-                    onClick={handleSearch}
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                    Rechercher
-                </button>
+                    </SimpleGrid>
 
-                <button
-                    onClick={resetFilters}
-                    className="bg-gray-500 text-white px-4 py-2 rounded"
-                >
-                    Reset
-                </button>
-            </div>
+                    {/* ACTIONS */}
+                    <HStack justify="flex-end" spacing={3}>
+                        <Button variant="outline" onClick={resetFilters}>
+                            Reset
+                        </Button>
 
-            {/* LOADING */}
-            {loading && <p>Chargement...</p>}
+                        <Button
+                            colorScheme="blue"
+                            onClick={handleSearch}
+                            isDisabled={loading}
+                        >
+                            {loading ? "Recherche..." : "Rechercher"}
+                        </Button>
+                    </HStack>
 
-            {/* RESULTATS */}
-            <div className="space-y-3">
+                </VStack>
+            </Box>
 
-                {results.length === 0 && !loading && (
-                    <p>Aucun résultat</p>
+            {/* RESULTS */}
+            <Box>
+                {loading && <Spinner />}
+
+                {!loading && results.length === 0 && (
+                    <Text color="gray.500">
+                        Aucun résultat
+                    </Text>
                 )}
 
-                {results.map(a => (
-                    <Card
-                        key={a.id}
-                        title={`${a.jobTitle} - ${a.restaurantCity}`}
-                        subtitle={`${a.startDateAffectation} → ${a.endDateAffectation || "en cours"}`}
-                    />
-                ))}
+                <VStack spacing={3} align="stretch">
+                    {results.map((a) => (
+                        <Card
+                            key={a.id}
+                            title={`${a.jobTitle} - ${a.restaurantCity}`}
+                            subtitle={`${a.startDateAffectation} → ${a.endDateAffectation || "en cours"}`}
+                        />
+                    ))}
+                </VStack>
+            </Box>
 
-            </div>
-
-        </div>
+        </Box>
     );
 }

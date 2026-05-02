@@ -1,9 +1,21 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../api/axios";
+
+import {
+  Box,
+  Heading,
+  Button,
+  Text,
+  Spinner,
+  Center,
+  Stack,
+  Badge,
+  SimpleGrid,
+  useDisclosure,
+} from "@chakra-ui/react";
+
 import Modal from "../../components/Modal";
-import ListWithFilter from "../../components/ListWithFilter";
-import Card from "../../components/Card";
 import AssignCollaboratorForm from "../../components/forms/AssignCollaboratorForm";
 
 export default function RestaurantDetailPage() {
@@ -14,8 +26,9 @@ export default function RestaurantDetailPage() {
   const [history, setHistory] = useState([]);
 
   const [loading, setLoading] = useState(true);
-  const [showAssignModal, setShowAssignModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     fetchData();
@@ -23,15 +36,16 @@ export default function RestaurantDetailPage() {
 
   const fetchData = async () => {
     try {
-      const resRestaurant = await api.get(`/api/restaurants/${id}`);
+      const resRestaurant = await api.get(
+          `/api/restaurants/${id}`
+      );
+
+      const resAffectations = await api.get(
+          `/api/affectations/restaurant/${id}/current`
+      );
+
       setRestaurant(resRestaurant.data);
-
-      const resAffectations = await api.get(`/api/affectations/restaurant/${id}/current`);
-
-      console.log("RAW AFFECTATIONS =", resAffectations.data);
-
       setAffectations(resAffectations.data);
-
     } catch (err) {
       console.error(err);
     } finally {
@@ -41,7 +55,17 @@ export default function RestaurantDetailPage() {
 
   const loadHistory = async () => {
     const res = await api.get("/api/affectations");
-    setHistory(res.data.filter(a => a.restaurantId === Number(id)));
+
+    setHistory(
+        res.data.filter(
+            (a) => a.restaurantId === Number(id)
+        )
+    );
+  };
+
+  const handleToggleHistory = () => {
+    setShowHistory(!showHistory);
+    loadHistory();
   };
 
   const handleAssign = async (data) => {
@@ -50,64 +74,132 @@ export default function RestaurantDetailPage() {
         collaboratorId: data.collaboratorId,
         restaurantId: Number(id),
         jobId: data.jobId,
-        startDateAffectation: data.startDateAffectation 
+        startDateAffectation:
+        data.startDateAffectation,
       });
 
-      setShowAssignModal(false);
+      onClose();
       fetchData();
-
     } catch (err) {
       console.error(err);
     }
   };
 
-  if (loading) return <p className="p-6">Chargement...</p>;
-  if (!restaurant) return <p className="p-6">Restaurant introuvable</p>;
+  if (loading) {
+    return (
+        <Center h="200px">
+          <Spinner size="xl" />
+        </Center>
+    );
+  }
+
+  if (!restaurant) {
+    return (
+        <Center h="200px">
+          <Text>Restaurant introuvable</Text>
+        </Center>
+    );
+  }
+
+  const dataToShow = showHistory
+      ? history
+      : affectations;
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">{restaurant.name}</h1>
+      <Box p={6}>
+        {/* HEADER */}
+        <Heading size="lg" mb={1}>
+          {restaurant.name}
+        </Heading>
 
-      <div className="flex gap-2 mb-4">
-        <button
-          className="bg-yellow-500 text-white px-4 py-2 rounded"
-          onClick={() => setShowAssignModal(true)}
-        >
-          Affecter
-        </button>
+        <Text color="gray.600" mb={6}>
+          {restaurant.city} • {restaurant.address}
+        </Text>
 
-        <button
-          className="bg-gray-500 text-white px-4 py-2 rounded"
-          onClick={() => {
-            setShowHistory(!showHistory);
-            loadHistory();
-          }}
-        >
-          Historique
-        </button>
-      </div>
+        {/* ACTIONS */}
+        <Stack direction="row" spacing={3} mb={6}>
+          <Button colorScheme="yellow" onClick={onOpen}>
+            Affecter
+          </Button>
 
-      <ListWithFilter
-        items={showHistory ? history : affectations}
-        filterFields={[
-          { name: "collaboratorLastName", placeholder: "Nom" },
-          { name: "jobTitle", placeholder: "Poste" },
-          { name: "startDate", placeholder: "Date début", type: "date" }
-        ]}
-        renderItem={a => (
-          <Card
-            key={a.id}
-            title={`${a.collaboratorFirstName} ${a.collaboratorLastName}`.trim() || a.collaboratorEmail}
-            subtitle={`${a.jobTitle} - ${a.startDateAffectation} ${a.endDateAffectation ? "→ " + a.endDateAffectation : ""}`}
-        />
+          <Button
+              colorScheme={showHistory ? "blue" : "gray"}
+              onClick={handleToggleHistory}
+          >
+            {showHistory
+                ? "Voir actuel"
+                : "Historique"}
+          </Button>
+        </Stack>
+
+        {/* LIST */}
+        {dataToShow.length === 0 ? (
+            <Center
+                p={10}
+                borderWidth="1px"
+                borderRadius="lg"
+            >
+              <Text>
+                Aucune affectation à afficher
+              </Text>
+            </Center>
+        ) : (
+            <SimpleGrid
+                columns={{ base: 1, md: 2 }}
+                spacing={4}
+            >
+              {dataToShow.map((a) => (
+                  <Box
+                      key={a.id}
+                      p={4}
+                      borderWidth="1px"
+                      borderRadius="lg"
+                  >
+                    <Stack spacing={1}>
+                      <Text fontWeight="bold">
+                        {a.collaboratorFirstName}{" "}
+                        {a.collaboratorLastName}
+                      </Text>
+
+                      <Text fontSize="sm" color="gray.600">
+                        {a.jobTitle}
+                      </Text>
+
+                      <Text fontSize="sm" color="gray.500">
+                        {a.startDateAffectation}{" "}
+                        {a.endDateAffectation && (
+                            <>
+                              → {a.endDateAffectation}
+                            </>
+                        )}
+                      </Text>
+
+                      {showHistory ? (
+                          <Badge colorScheme="gray">
+                            Terminé
+                          </Badge>
+                      ) : (
+                          <Badge colorScheme="green">
+                            Actif
+                          </Badge>
+                      )}
+                    </Stack>
+                  </Box>
+              ))}
+            </SimpleGrid>
         )}
-      />
 
-      {showAssignModal && (
-        <Modal title="Affecter un collaborateur" onClose={() => setShowAssignModal(false)}>
-          <AssignCollaboratorForm onAssign={handleAssign} />
-        </Modal>
-      )}
-    </div>
+        {/* MODAL */}
+        {isOpen && (
+            <Modal
+                title="Affecter un collaborateur"
+                onClose={onClose}
+            >
+              <AssignCollaboratorForm
+                  onAssign={handleAssign}
+              />
+            </Modal>
+        )}
+      </Box>
   );
 }

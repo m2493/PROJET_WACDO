@@ -1,6 +1,18 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
+import {
+    Box,
+    Button,
+    Heading,
+    Select,
+    Input,
+    SimpleGrid,
+    Text,
+    Spinner,
+    VStack,
+    HStack
+} from "@chakra-ui/react";
 
 export default function EditAffectationPage() {
     const { id } = useParams();
@@ -15,25 +27,34 @@ export default function EditAffectationPage() {
 
     const [restaurants, setRestaurants] = useState([]);
     const [jobs, setJobs] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         fetchData();
     }, []);
 
     async function fetchData() {
-        const aff = await api.get(`/api/affectations/${id}`);
-        const rest = await api.get("/api/restaurants");
-        const jobsRes = await api.get("/api/jobs");
+        try {
+            const [aff, rest, jobsRes] = await Promise.all([
+                api.get(`/api/affectations/${id}`),
+                api.get("/api/restaurants"),
+                api.get("/api/jobs")
+            ]);
 
-        setRestaurants(rest.data);
-        setJobs(jobsRes.data);
+            setRestaurants(rest.data);
+            setJobs(jobsRes.data);
 
-        setForm({
-            restaurantId: aff.data.restaurantId,
-            jobId: aff.data.jobId,
-            startDateAffectation: aff.data.startDateAffectation,
-            endDateAffectation: aff.data.endDateAffectation || ""
-        });
+            setForm({
+                restaurantId: aff.data.restaurantId,
+                jobId: aff.data.jobId,
+                startDateAffectation: aff.data.startDateAffectation,
+                endDateAffectation: aff.data.endDateAffectation || ""
+            });
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     }
 
     function handleChange(e) {
@@ -55,63 +76,94 @@ export default function EditAffectationPage() {
         navigate(-1);
     }
 
+    if (loading) {
+        return (
+            <Box p={6}>
+                <Spinner />
+            </Box>
+        );
+    }
+
     return (
-        <div className="p-6 max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-6">
-                Modifier affectation
-            </h1>
+        <Box p={6} maxW="lg" mx="auto">
+            <VStack align="stretch" spacing={6}>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+                <Box>
+                    <Heading size="lg">Modifier affectation</Heading>
+                    <Text color="gray.500" fontSize="sm">
+                        Mise à jour des informations de l’affectation
+                    </Text>
+                </Box>
 
-                <select
-                    name="restaurantId"
-                    value={form.restaurantId}
-                    onChange={handleChange}
-                    className="w-full border p-2 rounded"
-                >
-                    {restaurants.map(r => (
-                        <option key={r.id} value={r.id}>
-                            {r.name}
-                        </option>
-                    ))}
-                </select>
+                <Box as="form" onSubmit={handleSubmit} bg="white" p={5} rounded="xl" shadow="md">
+                    <VStack spacing={4} align="stretch">
 
-                <select
-                    name="jobId"
-                    value={form.jobId}
-                    onChange={handleChange}
-                    className="w-full border p-2 rounded"
-                >
-                    {jobs.map(j => (
-                        <option key={j.id} value={j.id}>
-                            {j.labelFunction}
-                        </option>
-                    ))}
-                </select>
+                        <Box>
+                            <Text fontSize="sm" mb={1}>Restaurant</Text>
+                            <Select
+                                name="restaurantId"
+                                value={form.restaurantId}
+                                onChange={handleChange}
+                            >
+                                {restaurants.map((r) => (
+                                    <option key={r.id} value={r.id}>
+                                        {r.name}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Box>
 
-                <input
-                    type="date"
-                    name="startDateAffectation"
-                    value={form.startDateAffectation}
-                    onChange={handleChange}
-                    className="w-full border p-2 rounded"
-                />
+                        <Box>
+                            <Text fontSize="sm" mb={1}>Poste</Text>
+                            <Select
+                                name="jobId"
+                                value={form.jobId}
+                                onChange={handleChange}
+                            >
+                                {jobs.map((j) => (
+                                    <option key={j.id} value={j.id}>
+                                        {j.labelFunction}
+                                    </option>
+                                ))}
+                            </Select>
+                        </Box>
 
-                <input
-                    type="date"
-                    name="endDateAffectation"
-                    value={form.endDateAffectation}
-                    onChange={handleChange}
-                    className="w-full border p-2 rounded"
-                />
+                        <SimpleGrid columns={2} spacing={4}>
+                            <Box>
+                                <Text fontSize="sm" mb={1}>Date début</Text>
+                                <Input
+                                    type="date"
+                                    name="startDateAffectation"
+                                    value={form.startDateAffectation}
+                                    onChange={handleChange}
+                                />
+                            </Box>
 
-                <button
-                    type="submit"
-                    className="bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                    Enregistrer
-                </button>
-            </form>
-        </div>
+                            <Box>
+                                <Text fontSize="sm" mb={1}>Date fin</Text>
+                                <Input
+                                    type="date"
+                                    name="endDateAffectation"
+                                    value={form.endDateAffectation}
+                                    onChange={handleChange}
+                                />
+                            </Box>
+                        </SimpleGrid>
+
+                        <HStack justify="flex-end" spacing={3}>
+                            <Button variant="outline" onClick={() => navigate(-1)}>
+                                Annuler
+                            </Button>
+
+                            <Button colorScheme="blue" type="submit">
+                                Enregistrer
+                            </Button>
+                        </HStack>
+
+                    </VStack>
+                </Box>
+
+            </VStack>
+        </Box>
     );
 }

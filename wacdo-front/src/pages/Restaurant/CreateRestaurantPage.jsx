@@ -32,38 +32,38 @@ export default function CreateRestaurantPage() {
   };
 
   return (
-    <div className="max-w-xl mx-auto p-6">
-      <h1 className="text-xl font-bold mb-6">Créer un restaurant</h1>
+      <div className="max-w-xl mx-auto p-6">
+        <h1 className="text-xl font-bold mb-6">Créer un restaurant</h1>
 
-      <Formik
-        initialValues={initialValues}
-        validationSchema={validationSchema}
-        onSubmit={handleSubmit}
-      >
-        <Form className="bg-white shadow rounded p-6">
-          <FormInput name="name" label="Nom du restaurant" />
-          <FormInput name="city" label="Ville" />
-          <FormInput name="address" label="Adresse" />
-          <FormInput name="postalCode" label="Code postal" />
+        <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+        >
+          <Form className="bg-white shadow rounded p-6">
+            <FormInput name="name" label="Nom du restaurant" />
+            <FormInput name="city" label="Ville" />
+            <FormInput name="address" label="Adresse" />
+            <FormInput name="postalCode" label="Code postal" />
 
-          <div className="flex justify-end gap-2 mt-4">
-            <button
-              type="button"
-              onClick={() => navigate("/restaurants")}
-              className="px-4 py-2 border rounded"
-            >
-              Annuler
-            </button>
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                  type="button"
+                  onClick={() => navigate("/restaurants")}
+                  className="px-4 py-2 border rounded"
+              >
+                Annuler
+              </button>
 
-            <button
-              type="submit"
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Enregistrer
-            </button>
-          </div>
-        </Form>
-      </Formik>
-    </div>
+              <button
+                  type="submit"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </Form>
+        </Formik>
+      </div>
   );
 }
