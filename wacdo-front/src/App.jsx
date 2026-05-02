@@ -21,115 +21,118 @@ import EditAffectationPage from "./pages/Affectation/EditAffectationPage"
 import Navbar from "./pages/Navbar";
 
 
+
+
 function App() {
-  return (
-    <AuthProvider>
-      <Router>
-        <Navbar />
+    return (
 
-        <Routes>
-          <Route path="/login" element={<Login />} />
+            <AuthProvider>
+                <Router>
+                    <Navbar />
 
-          <Route
-            path="/restaurant"
-            element={
-              <ProtectedRoute>
-                <Restaurant />
-              </ProtectedRoute>
-            }
-          />
+                    <Routes>
+                        <Route path="/login" element={<Login />} />
 
-          <Route
-            path="/restaurants/:id"
-            element={
-              <ProtectedRoute>
-                <RestaurantDetail />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/restaurant"
+                            element={
+                                <ProtectedRoute>
+                                    <Restaurant />
+                                </ProtectedRoute>
+                            }
+                        />
 
-          <Route
-            path="/restaurants/create"
-            element={
-              <ProtectedRoute>
-                <CreateRestaurantPage />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/restaurants/:id"
+                            element={
+                                <ProtectedRoute>
+                                    <RestaurantDetail />
+                                </ProtectedRoute>
+                            }
+                        />
 
-          <Route
-            path="/collaborator"
-            element={
-              <ProtectedRoute>
-                <Collaborator />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/restaurants/create"
+                            element={
+                                <ProtectedRoute>
+                                    <CreateRestaurantPage />
+                                </ProtectedRoute>
+                            }
+                        />
 
-          <Route
-            path="/collaborators/:id"
-            element={
-              <ProtectedRoute>
-                <CollaboratorDetail />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/collaborator"
+                            element={
+                                <ProtectedRoute>
+                                    <Collaborator />
+                                </ProtectedRoute>
+                            }
+                        />
 
-          <Route
-            path="/collaborators/create"
-            element={
-              <ProtectedRoute>
-                <CreateCollaboratorPage />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/collaborators/:id"
+                            element={
+                                <ProtectedRoute>
+                                    <CollaboratorDetail />
+                                </ProtectedRoute>
+                            }
+                        />
 
-<Route
-            path="/collaborators/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EditCollaboratorPage />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/collaborators/create"
+                            element={
+                                <ProtectedRoute>
+                                    <CreateCollaboratorPage />
+                                </ProtectedRoute>
+                            }
+                        />
 
-            <Route
-                path="/affectations/:id/edit"
-                element={<EditAffectationPage />}
-            />
+                        <Route
+                            path="/collaborators/:id/edit"
+                            element={
+                                <ProtectedRoute>
+                                    <EditCollaboratorPage />
+                                </ProtectedRoute>
+                            }
+                        />
 
+                        <Route
+                            path="/affectations/:id/edit"
+                            element={<EditAffectationPage />}
+                        />
 
+                        <Route
+                            path="/function"
+                            element={
+                                <ProtectedRoute>
+                                    <Function />
+                                </ProtectedRoute>
+                            }
+                        />
 
-          <Route
-            path="/function"
-            element={
-              <ProtectedRoute>
-                <Function />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/function/create"
+                            element={
+                                <ProtectedRoute>
+                                    <CreateFunctionPage />
+                                </ProtectedRoute>
+                            }
+                        />
 
-                    <Route
-            path="/function/create"
-            element={
-              <ProtectedRoute>
-                <CreateFunctionPage />
-              </ProtectedRoute>
-            }
-          />
+                        <Route
+                            path="/affectation"
+                            element={
+                                <ProtectedRoute>
+                                    <Affectation />
+                                </ProtectedRoute>
+                            }
+                        />
+                    </Routes>
 
-          <Route
-            path="/affectation"
-            element={
-              <ProtectedRoute>
-                <Affectation />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
-    </AuthProvider>
-  );
+                </Router>
+            </AuthProvider>
+        
+    );
 }
 
 export default App;

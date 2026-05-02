@@ -2,17 +2,33 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../../api/axios";
 import ListWithFilter from "../../components/ListWithFilter";
-import Card from "../../components/Card";
+
+import {
+  Box,
+  Heading,
+  Button,
+  Stack,
+  Text,
+  Input,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  ModalCloseButton,
+  useDisclosure,
+} from "@chakra-ui/react";
 
 export default function FunctionsListPage() {
   const [functions, setFunctions] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [labelFunction, setLabelFunction] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,18 +49,17 @@ export default function FunctionsListPage() {
   function openEditModal(item) {
     setSelectedItem(item);
     setLabelFunction(item.labelFunction);
-    setIsOpen(true);
+    onOpen();
   }
 
   function closeModal() {
-    setIsOpen(false);
+    onClose();
     setSelectedItem(null);
     setLabelFunction("");
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-
     if (!labelFunction.trim()) return;
 
     try {
@@ -52,15 +67,15 @@ export default function FunctionsListPage() {
 
       const res = await api.put(`/api/jobs/${selectedItem.id}`, {
         id: selectedItem.id,
-        labelFunction: labelFunction,
+        labelFunction,
       });
 
       const updated = res.data;
 
       setFunctions((prev) =>
-        prev.map((item) =>
-          item.id === updated.id ? updated : item
-        )
+          prev.map((item) =>
+              item.id === updated.id ? updated : item
+          )
       );
 
       closeModal();
@@ -72,85 +87,88 @@ export default function FunctionsListPage() {
     }
   }
 
-  if (loading) return <p className="p-6">Chargement...</p>;
+  if (loading) {
+    return (
+        <Box p={6}>
+          <Text>Chargement...</Text>
+        </Box>
+    );
+  }
 
   return (
-    <div className="p-6">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Liste des fonctions</h1>
+      <Box p={6}>
+        {/* HEADER */}
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
+          <Heading size="lg">Liste des fonctions</Heading>
 
-        <button
-          onClick={() => navigate("/function/create")}
-          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
-        >
-          Créer une fonction
-        </button>
-      </div>
+          <Button
+              colorScheme="blue"
+              onClick={() => navigate("/function/create")}
+          >
+            Créer une fonction
+          </Button>
+        </Box>
 
-      {/* LISTE */}
-      <ListWithFilter
-        items={functions}
-        renderItem={(item) => (
-          <div key={item.id} className="mb-4">
-            <Card title={item.labelFunction} />
+        {/* LISTE */}
+        <ListWithFilter
+            items={functions}
+            renderItem={(item) => (
+                <Box key={item.id} mb={4}>
+                  <Box
+                      p={4}
+                      borderWidth="1px"
+                      borderRadius="lg"
+                      shadow="sm"
+                  >
+                    <Text fontWeight="bold">{item.labelFunction}</Text>
 
-            <div className="flex gap-2 mt-2">
-              <button
-                onClick={() => openEditModal(item)}
-                className="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded"
+                    <Button
+                        mt={3}
+                        size="sm"
+                        colorScheme="yellow"
+                        onClick={() => openEditModal(item)}
+                    >
+                      Modifier
+                    </Button>
+                  </Box>
+                </Box>
+            )}
+        />
+
+        {/* MODAL */}
+        <Modal isOpen={isOpen} onClose={closeModal} isCentered>
+          <ModalOverlay />
+
+          <ModalContent>
+            <ModalHeader>Modifier la fonction</ModalHeader>
+            <ModalCloseButton />
+
+            <ModalBody>
+              <Stack spacing={3}>
+                <Text>Libellé</Text>
+                <Input
+                    value={labelFunction}
+                    onChange={(e) => setLabelFunction(e.target.value)}
+                    placeholder="Ex: Manager"
+                />
+              </Stack>
+            </ModalBody>
+
+            <ModalFooter gap={2}>
+              <Button variant="ghost" onClick={closeModal}>
+                Annuler
+              </Button>
+
+              <Button
+                  colorScheme="green"
+                  onClick={handleSubmit}
+                  isLoading={saving}
               >
-                Modifier
-              </button>
-            </div>
-          </div>
-        )}
-      />
-
-      {/* MODAL */}
-      {isOpen && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
-            <h2 className="text-xl font-bold mb-4">
-              Modifier la fonction
-            </h2>
-
-            <form onSubmit={handleSubmit}>
-              <label className="block text-sm font-medium mb-2">
-                Libellé
-              </label>
-
-              <input
-                type="text"
-                value={labelFunction}
-                onChange={(e) =>
-                  setLabelFunction(e.target.value)
-                }
-                className="w-full border rounded-lg px-3 py-2 mb-4"
-                placeholder="Ex: Manager"
-              />
-
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  className="px-4 py-2 rounded border"
-                >
-                  Annuler
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                >
-                  {saving ? "Enregistrement..." : "Sauvegarder"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+                Sauvegarder
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+      </Box>
   );
 }
