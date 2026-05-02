@@ -1,14 +1,28 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../api/axios";
-import Card from "../../components/Card";
+
+import {
+  Box,
+  Heading,
+  Text,
+  Input,
+  Stack,
+  Button,
+  Spinner,
+  Center,
+  SimpleGrid,
+  Badge,
+  HStack,
+} from "@chakra-ui/react";
 
 export default function CollaboratorDetailPage() {
   const { id } = useParams();
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   const [collaborator, setCollaborator] = useState(null);
   const [affectations, setAffectations] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const [jobFilter, setJobFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -18,24 +32,46 @@ export default function CollaboratorDetailPage() {
   }, []);
 
   async function fetchData() {
-    const collabRes = await api.get("/api/collaborators");
-    const collab = collabRes.data.find(c => c.id == id);
-    setCollaborator(collab);
+    try {
+      const collabRes = await api.get("/api/collaborators");
+      const collab = collabRes.data.find((c) => c.id == id);
 
-    const affRes = await api.get(`/api/affectations/collaborator/${id}`);
-    setAffectations(affRes.data);
+      const affRes = await api.get(
+          `/api/affectations/collaborator/${id}`
+      );
+
+      setCollaborator(collab);
+      setAffectations(affRes.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  if (!collaborator) return <p className="p-6">Chargement...</p>;
+  if (loading) {
+    return (
+        <Center h="200px">
+          <Spinner size="xl" />
+        </Center>
+    );
+  }
 
-  const filtered = affectations.filter(a => {
+  if (!collaborator) {
+    return (
+        <Center h="200px">
+          <Text>Collaborateur introuvable</Text>
+        </Center>
+    );
+  }
+
+  const filtered = affectations.filter((a) => {
     const matchJob =
-      jobFilter === "" ||
-      a.jobTitle?.toLowerCase().includes(jobFilter.toLowerCase());
+        jobFilter === "" ||
+        a.jobTitle?.toLowerCase().includes(jobFilter.toLowerCase());
 
     const matchDate =
-      dateFilter === "" ||
-      a.startDateAffectation === dateFilter;
+        dateFilter === "" || a.startDateAffectation === dateFilter;
 
     return matchJob && matchDate;
   });
@@ -43,99 +79,147 @@ export default function CollaboratorDetailPage() {
   const today = new Date().toISOString().split("T")[0];
 
   const current = filtered.filter(
-    a =>
-      !a.endDateAffectation ||
-      a.endDateAffectation >= today
+      (a) =>
+          !a.endDateAffectation ||
+          a.endDateAffectation >= today
   );
 
   const history = filtered.filter(
-    a =>
-      a.endDateAffectation &&
-      a.endDateAffectation < today
+      (a) =>
+          a.endDateAffectation &&
+          a.endDateAffectation < today
   );
 
   return (
-    <div className="p-6 space-y-6">
+      <Box p={6}>
+        {/* HEADER COLLAB */}
+        <Box
+            p={5}
+            borderWidth="1px"
+            borderRadius="lg"
+            mb={6}
+        >
+          <Heading size="md">
+            {collaborator.lastName} {collaborator.firstName}
+          </Heading>
 
-      <Card
-        title={`${collaborator.lastName} ${collaborator.firstName}`}
-        subtitle={collaborator.email}
-      />
+          <Text color="gray.600">{collaborator.email}</Text>
+        </Box>
 
-      <div className="grid grid-cols-2 gap-4">
-        <input
-          placeholder="Filtrer par poste"
-          value={jobFilter}
-          onChange={e => setJobFilter(e.target.value)}
-          className="border p-2 rounded"
-        />
+        {/* FILTERS */}
+        <Box
+            p={4}
+            mb={6}
+            borderWidth="1px"
+            borderRadius="lg"
+            bg="gray.50"
+        >
+          <Stack direction={{ base: "column", md: "row" }} spacing={3}>
+            <Input
+                placeholder="Filtrer par poste"
+                value={jobFilter}
+                onChange={(e) => setJobFilter(e.target.value)}
+            />
 
-        <input
-          type="date"
-          value={dateFilter}
-          onChange={e => setDateFilter(e.target.value)}
-          className="border p-2 rounded"
-        />
-      </div>
+            <Input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+            />
+          </Stack>
+        </Box>
 
-      <div>
-        <h2 className="text-xl font-bold mb-3">
-          Affectations en cours
-        </h2>
+        {/* CURRENT */}
+        <Box mb={8}>
+          <Heading size="sm" mb={4}>
+            Affectations en cours
+          </Heading>
 
-        {current.map(a => (
-            <div key={a.id} className="mb-3">
-              <Card
-                  title={a.jobTitle}
-                  subtitle={`Début : ${a.startDateAffectation}`}
-              />
-
-              <div className="mt-2 flex justify-end">
-                <button
-                    onClick={() => navigate(`/affectations/${a.id}/edit`)}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+            {current.map((a) => (
+                <Box
+                    key={a.id}
+                    p={4}
+                    borderWidth="1px"
+                    borderRadius="lg"
                 >
-                  Modifier
-                </button>
-              </div>
-            </div>
-        ))}
-      </div>
+                  <HStack justify="space-between">
+                    <Text fontWeight="bold">{a.jobTitle}</Text>
 
-      <div>
-        <h2 className="text-xl font-bold mb-3">
-          Historique des affectations
-        </h2>
+                    <Badge colorScheme="green">Actif</Badge>
+                  </HStack>
 
-        {history.map(a => (
-            <div key={a.id} className="mb-3">
-              <Card
-                  title={a.jobTitle}
-                  subtitle={`Du ${a.startDateAffectation} au ${a.endDateAffectation}`}
-              />
+                  <Text fontSize="sm" color="gray.600" mt={2}>
+                    Début : {a.startDateAffectation}
+                  </Text>
 
-              <div className="mt-2 flex justify-end">
-                <button
-                    onClick={() => navigate(`/affectations/${a.id}/edit`)}
-                    className="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600"
+                  <Button
+                      mt={3}
+                      size="sm"
+                      colorScheme="yellow"
+                      onClick={() =>
+                          navigate(`/affectations/${a.id}/edit`)
+                      }
+                  >
+                    Modifier
+                  </Button>
+                </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
+
+        {/* HISTORY */}
+        <Box mb={8}>
+          <Heading size="sm" mb={4}>
+            Historique des affectations
+          </Heading>
+
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+            {history.map((a) => (
+                <Box
+                    key={a.id}
+                    p={4}
+                    borderWidth="1px"
+                    borderRadius="lg"
+                    opacity={0.8}
                 >
-                  Modifier
-                </button>
-              </div>
-            </div>
-        ))}
+                  <HStack justify="space-between">
+                    <Text fontWeight="bold">{a.jobTitle}</Text>
 
+                    <Badge colorScheme="gray">Terminé</Badge>
+                  </HStack>
 
-<div className="flex justify-end">
-  <button
-    onClick={() => navigate(`/collaborators/${id}/edit`)}
-    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-  >
-    Affecter un nouveau poste
-  </button>
-</div>
+                  <Text fontSize="sm" color="gray.600" mt={2}>
+                    Du {a.startDateAffectation} au{" "}
+                    {a.endDateAffectation}
+                  </Text>
 
-      </div>
-    </div>
+                  <Button
+                      mt={3}
+                      size="sm"
+                      colorScheme="yellow"
+                      onClick={() =>
+                          navigate(`/affectations/${a.id}/edit`)
+                      }
+                  >
+                    Modifier
+                  </Button>
+                </Box>
+            ))}
+          </SimpleGrid>
+        </Box>
+
+        {/* ACTION */}
+        <Box display="flex" justifyContent="flex-end">
+          <Button
+              colorScheme="blue"
+              onClick={() =>
+                  navigate(`/collaborators/${id}/edit`)
+              }
+          >
+            Affecter un nouveau poste
+          </Button>
+        </Box>
+      </Box>
   );
 }

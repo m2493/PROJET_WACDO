@@ -1,22 +1,39 @@
+import {
+    FormControl,
+    FormLabel,
+    Input,
+    FormErrorMessage,
+} from "@chakra-ui/react";
 import { useField } from "formik";
 
 export default function FormInput({ label, ...props }) {
-  const [field, meta] = useField(props);
+    const [field, meta] = useField(props);
 
-  return (
-    <div className="mb-4">
-      <label className="block text-sm font-medium mb-1">{label}</label>
+    return (
+        <FormControl
+            isInvalid={meta.touched && meta.error}
+        >
+            {label && (
+                <FormLabel color="gray.700" fontWeight="medium">
+                    {label}
+                </FormLabel>
+            )}
 
-      <input
-        {...field}
-        {...props}
-        className={`w-full border rounded px-3 py-2 focus:outline-none focus:ring-2 
-        ${meta.touched && meta.error ? "border-red-500" : "border-gray-300"}`}
-      />
+            <Input
+                {...field}
+                {...props}
+                focusBorderColor="blue.500"
+                bg="white"
+                borderColor="gray.300"
+                _hover={{ borderColor: "gray.400" }}
+                size="md"
+            />
 
-      {meta.touched && meta.error && (
-        <p className="text-red-500 text-sm mt-1">{meta.error}</p>
-      )}
-    </div>
-  );
+            {meta.touched && meta.error && (
+                <FormErrorMessage>
+                    {meta.error}
+                </FormErrorMessage>
+            )}
+        </FormControl>
+    );
 }

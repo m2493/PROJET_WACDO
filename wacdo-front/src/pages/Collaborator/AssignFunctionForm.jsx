@@ -1,79 +1,102 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
+import {
+    Box,
+    Select,
+    Input,
+    Button,
+    Stack,
+    Text,
+} from "@chakra-ui/react";
+
 export default function AssignCollaboratorForm({ onAssign }) {
+    const [collaborators, setCollaborators] = useState([]);
+    const [jobs, setJobs] = useState([]);
 
-  const [collaborators, setCollaborators] = useState([]);
-  const [jobs, setJobs] = useState([]);
+    const [collaboratorId, setCollaboratorId] = useState("");
+    const [jobId, setJobId] = useState("");
+    const [startDate, setStartDate] = useState("");
 
-  const [collaboratorId, setCollaboratorId] = useState("");
-  const [jobId, setJobId] = useState("");
-  const [startDate, setStartDate] = useState("");
+    useEffect(() => {
+        loadData();
+    }, []);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+    const loadData = async () => {
+        const resC = await api.get("/api/collaborators/non-affectes");
+        setCollaborators(resC.data);
 
-  const loadData = async () => {
-    const resC = await api.get("/api/collaborators/non-affectes");
-    setCollaborators(resC.data);
+        const resJ = await api.get("/api/jobs");
+        setJobs(resJ.data);
 
-    const resJ = await api.get("/api/jobs");
-    setJobs(resJ.data);
+        setStartDate(new Date().toISOString().split("T")[0]);
+    };
 
-    setStartDate(new Date().toISOString().split("T")[0]);
-  };
+    const handleSubmit = (e) => {
+        e.preventDefault();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+        onAssign({
+            collaboratorId: Number(collaboratorId),
+            jobId: Number(jobId),
+            startDate,
+        });
+    };
 
-    onAssign({
-      collaboratorId: Number(collaboratorId),
-      jobId: Number(jobId),
-      startDate
-    });
-  };
+    return (
+        <Box as="form" onSubmit={handleSubmit}>
+            <Stack spacing={4}>
+                <Text fontWeight="bold">
+                    Nouvelle affectation
+                </Text>
 
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+                {/* COLLAB */}
+                <Select
+                    placeholder="Choisir un collaborateur"
+                    value={collaboratorId}
+                    onChange={(e) =>
+                        setCollaboratorId(e.target.value)
+                    }
+                    bg="white"
+                >
+                    {collaborators.map((c) => (
+                        <option key={c.id} value={c.id}>
+                            {c.firstname} {c.lastname}
+                        </option>
+                    ))}
+                </Select>
 
-      <select
-        value={collaboratorId}
-        onChange={(e) => setCollaboratorId(e.target.value)}
-        required
-      >
-        <option value="">-- Collaborateur --</option>
-        {collaborators.map(c => (
-          <option key={c.id} value={c.id}>
-            {c.firstname} {c.lastname}
-          </option>
-        ))}
-      </select>
+                {/* JOB */}
+                <Select
+                    placeholder="Choisir un poste"
+                    value={jobId}
+                    onChange={(e) => setJobId(e.target.value)}
+                    bg="white"
+                >
+                    {jobs.map((j) => (
+                        <option key={j.id} value={j.id}>
+                            {j.labelFunction || j.title}
+                        </option>
+                    ))}
+                </Select>
 
-      <select
-        value={jobId}
-        onChange={(e) => setJobId(e.target.value)}
-        required
-      >
-        <option value="">-- Poste --</option>
-        {jobs.map(j => (
-          <option key={j.id} value={j.id}>
-            {j.title}
-          </option>
-        ))}
-      </select>
+                {/* DATE */}
+                <Input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) =>
+                        setStartDate(e.target.value)
+                    }
+                    bg="white"
+                />
 
-      <input
-        type="date"
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        required
-      />
-
-      <button className="bg-green-600 text-white px-4 py-2 rounded">
-        Affecter
-      </button>
-
-    </form>
-  );
+                {/* ACTION */}
+                <Button
+                    type="submit"
+                    colorScheme="green"
+                >
+                    Affecter
+                </Button>
+            </Stack>
+        </Box>
+    );
 }
