@@ -1,6 +1,6 @@
 import { useState } from "react";
 import api from "../../api/axios";
-import Card from "../../components/Card";
+
 import {
     Box,
     Heading,
@@ -62,7 +62,7 @@ export default function AffectationSearchPage() {
     }
 
     return (
-        <Box p={6} spaceY={6}>
+        <VStack spacing={8} align="stretch" p={6}>
 
             {/* HEADER */}
             <Box>
@@ -72,66 +72,41 @@ export default function AffectationSearchPage() {
                 </Text>
             </Box>
 
-            {/* FILTER PANEL */}
-            <Box bg="white" p={5} rounded="xl" shadow="md">
-                <VStack spacing={4} align="stretch">
+            {/* FILTERS */}
+            <Box bg="white" p={6} rounded="xl" shadow="md">
+                <VStack spacing={5} align="stretch">
 
-                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                    <SimpleGrid columns={{ base: 1, md: 2 }} spacing={5}>
 
                         <Box>
-                            <Text fontSize="sm" mb={1}>Poste</Text>
-                            <Input
-                                name="jobTitle"
-                                placeholder="Ex: Manager"
-                                value={filters.jobTitle}
-                                onChange={handleChange}
-                            />
+                            <Text fontSize="sm" mb={2}>Poste</Text>
+                            <Input name="jobTitle" value={filters.jobTitle} onChange={handleChange} />
                         </Box>
 
                         <Box>
-                            <Text fontSize="sm" mb={1}>Ville</Text>
-                            <Input
-                                name="city"
-                                placeholder="Ex: Paris"
-                                value={filters.city}
-                                onChange={handleChange}
-                            />
+                            <Text fontSize="sm" mb={2}>Ville</Text>
+                            <Input name="city" value={filters.city} onChange={handleChange} />
                         </Box>
 
                         <Box>
-                            <Text fontSize="sm" mb={1}>Date début</Text>
-                            <Input
-                                type="date"
-                                name="startDate"
-                                value={filters.startDate}
-                                onChange={handleChange}
-                            />
+                            <Text fontSize="sm" mb={2}>Date début</Text>
+                            <Input type="date" name="startDate" value={filters.startDate} onChange={handleChange} />
                         </Box>
 
                         <Box>
-                            <Text fontSize="sm" mb={1}>Date fin</Text>
-                            <Input
-                                type="date"
-                                name="endDate"
-                                value={filters.endDate}
-                                onChange={handleChange}
-                            />
+                            <Text fontSize="sm" mb={2}>Date fin</Text>
+                            <Input type="date" name="endDate" value={filters.endDate} onChange={handleChange} />
                         </Box>
 
                     </SimpleGrid>
 
-                    {/* ACTIONS */}
                     <HStack justify="flex-end" spacing={3}>
                         <Button variant="outline" onClick={resetFilters}>
                             Reset
                         </Button>
 
-                        <Button
-                            colorScheme="blue"
-                            onClick={handleSearch}
-                            isDisabled={loading}
-                        >
-                            {loading ? "Recherche..." : "Rechercher"}
+                        <Button colorScheme="blue" onClick={handleSearch} isLoading={loading}>
+                            Rechercher
                         </Button>
                     </HStack>
 
@@ -143,22 +118,33 @@ export default function AffectationSearchPage() {
                 {loading && <Spinner />}
 
                 {!loading && results.length === 0 && (
-                    <Text color="gray.500">
-                        Aucun résultat
-                    </Text>
+                    <Text color="gray.500">Aucun résultat</Text>
                 )}
 
-                <VStack spacing={3} align="stretch">
+                <VStack spacing={4} align="stretch" mt={4}>
+
                     {results.map((a) => (
-                        <Card
+                        <Box
                             key={a.id}
-                            title={`${a.jobTitle} - ${a.restaurantCity}`}
-                            subtitle={`${a.startDateAffectation} → ${a.endDateAffectation || "en cours"}`}
-                        />
+                            p={4}
+                            bg="white"
+                            shadow="sm"
+                            rounded="lg"
+                            borderWidth="1px"
+                        >
+                            <Text fontWeight="bold">
+                                {a.jobTitle} - {a.restaurantCity}
+                            </Text>
+
+                            <Text fontSize="sm" color="gray.600">
+                                {a.startDateAffectation} → {a.endDateAffectation || "en cours"}
+                            </Text>
+                        </Box>
                     ))}
+
                 </VStack>
             </Box>
 
-        </Box>
+        </VStack>
     );
 }
