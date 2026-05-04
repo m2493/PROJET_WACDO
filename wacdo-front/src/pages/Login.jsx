@@ -2,53 +2,119 @@ import { useState, useContext } from "react";
 import { AuthContext } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 
+import {
+    Box,
+    Button,
+    FormControl,
+    FormLabel,
+    Input,
+    Heading,
+    Text,
+    VStack,
+    Alert,
+    AlertIcon,
+    useToast
+} from "@chakra-ui/react";
+
 function Login() {
-  const [email, setEmail] = useState("");
-  const [motDePasse, setMotDePasse] = useState("");
-  const [error, setError] = useState("");
+    const [email, setEmail] = useState("");
+    const [motDePasse, setMotDePasse] = useState("");
+    const [error, setError] = useState("");
 
-  const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
+    const navigate = useNavigate();
+    const toast = useToast();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
 
-    try {
-      await login(email, motDePasse);
-      navigate("/restaurant");
-    } /*catch {
-      *setError("Identifiants incorrects");
-      */
-     catch (error) {
-    console.log(error);
-    console.log(error.response);
-    setError("Erreur connexion");
+        try {
+            await login(email, motDePasse);
+
+            toast({
+                title: "Connexion réussie",
+                status: "success",
+                duration: 2000,
+                isClosable: true,
+            });
+
+            navigate("/restaurant");
+        } catch (error) {
+            console.log(error);
+            setError("Identifiants incorrects");
         }
-  };
+    };
 
-  return (
-    <div>
-      <h2>Connexion Admin</h2>
+    return (
+        <Box
+            minH="100vh"
+            display="flex"
+            alignItems="center"
+            justifyContent="center"
+            bg="gray.50"
+        >
+            <Box
+                w="full"
+                maxW="400px"
+                bg="white"
+                p={8}
+                borderRadius="xl"
+                boxShadow="lg"
+            >
+                <VStack spacing={6} align="stretch">
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          placeholder="Email"
-          onChange={(e) => setEmail(e.target.value)}
-        />
+                    <Heading textAlign="center" size="lg">
+                        Connexion Admin
+                    </Heading>
 
-        <input
-          type="password"
-          placeholder="Mot de passe"
-          onChange={(e) => setMotDePasse(e.target.value)}
-        />
+                    <Text textAlign="center" color="gray.500">
+                        Accédez à votre espace sécurisé
+                    </Text>
 
-        <button type="submit">Connexionn</button>
-      </form>
+                    <form onSubmit={handleSubmit}>
+                        <VStack spacing={4}>
 
-      <p>{error}</p>
-    </div>
-  );
+                            <FormControl>
+                                <FormLabel>Email</FormLabel>
+                                <Input
+                                    type="email"
+                                    placeholder="ex: admin@mail.com"
+                                    onChange={(e) => setEmail(e.target.value)}
+                                />
+                            </FormControl>
+
+                            <FormControl>
+                                <FormLabel>Mot de passe</FormLabel>
+                                <Input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    onChange={(e) => setMotDePasse(e.target.value)}
+                                />
+                            </FormControl>
+
+                            {error && (
+                                <Alert status="error" borderRadius="md">
+                                    <AlertIcon />
+                                    {error}
+                                </Alert>
+                            )}
+
+                            <Button
+                                type="submit"
+                                colorScheme="blue"
+                                width="full"
+                            >
+                                Connexion
+                            </Button>
+
+                        </VStack>
+                    </form>
+
+                </VStack>
+            </Box>
+        </Box>
+    );
 }
 
 export default Login;

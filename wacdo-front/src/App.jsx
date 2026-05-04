@@ -1,5 +1,8 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./auth/AuthContext";
+import { useContext } from "react";
+import { AuthContext } from "./auth/AuthContext";
+
 import ProtectedRoute from "./auth/ProtectedRoute";
 
 import Login from "./pages/Login";
@@ -17,122 +20,140 @@ import Function from "./pages/Function/Functions";
 import CreateFunctionPage from "./pages/Function/CreateFunctionPage";
 
 import Affectation from "./pages/Affectation/Affectations.jsx";
-import EditAffectationPage from "./pages/Affectation/EditAffectationPage"
+import EditAffectationPage from "./pages/Affectation/EditAffectationPage";
+
 import Navbar from "./pages/Navbar";
 
+/* 🔥 Wrapper pour gérer la logique auth + navbar */
+function AppLayout() {
+    const { isAuthenticated } = useContext(AuthContext);
 
-
-
-function App() {
     return (
+        <>
+            {/* Navbar uniquement si connecté */}
+            {isAuthenticated && <Navbar />}
 
-            <AuthProvider>
-                <Router>
-                    <Navbar />
+            <Routes>
+                <Route
+                    path="/"
+                    element={
+                        isAuthenticated ? (
+                            <Navigate to="/collaborator" />
+                        ) : (
+                            <Navigate to="/login" />
+                        )
+                    }
+                />
 
-                    <Routes>
-                        <Route path="/login" element={<Login />} />
+                <Route path="/login" element={<Login />} />
 
-                        <Route
-                            path="/restaurant"
-                            element={
-                                <ProtectedRoute>
-                                    <Restaurant />
-                                </ProtectedRoute>
-                            }
-                        />
+                {/* PROTECTED ROUTES */}
+                <Route
+                    path="/restaurant"
+                    element={
+                        <ProtectedRoute>
+                            <Restaurant />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/restaurants/:id"
-                            element={
-                                <ProtectedRoute>
-                                    <RestaurantDetail />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/restaurants/:id"
+                    element={
+                        <ProtectedRoute>
+                            <RestaurantDetail />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/restaurants/create"
-                            element={
-                                <ProtectedRoute>
-                                    <CreateRestaurantPage />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/restaurants/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateRestaurantPage />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/collaborator"
-                            element={
-                                <ProtectedRoute>
-                                    <Collaborator />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/collaborator"
+                    element={
+                        <ProtectedRoute>
+                            <Collaborator />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/collaborators/:id"
-                            element={
-                                <ProtectedRoute>
-                                    <CollaboratorDetail />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/collaborators/:id"
+                    element={
+                        <ProtectedRoute>
+                            <CollaboratorDetail />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/collaborators/create"
-                            element={
-                                <ProtectedRoute>
-                                    <CreateCollaboratorPage />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/collaborators/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateCollaboratorPage />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/collaborators/:id/edit"
-                            element={
-                                <ProtectedRoute>
-                                    <EditCollaboratorPage />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/collaborators/:id/edit"
+                    element={
+                        <ProtectedRoute>
+                            <EditCollaboratorPage />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/affectations/:id/edit"
-                            element={<EditAffectationPage />}
-                        />
+                <Route
+                    path="/function"
+                    element={
+                        <ProtectedRoute>
+                            <Function />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/function"
-                            element={
-                                <ProtectedRoute>
-                                    <Function />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/function/create"
+                    element={
+                        <ProtectedRoute>
+                            <CreateFunctionPage />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/function/create"
-                            element={
-                                <ProtectedRoute>
-                                    <CreateFunctionPage />
-                                </ProtectedRoute>
-                            }
-                        />
+                <Route
+                    path="/affectation"
+                    element={
+                        <ProtectedRoute>
+                            <Affectation />
+                        </ProtectedRoute>
+                    }
+                />
 
-                        <Route
-                            path="/affectation"
-                            element={
-                                <ProtectedRoute>
-                                    <Affectation />
-                                </ProtectedRoute>
-                            }
-                        />
-                    </Routes>
-
-                </Router>
-            </AuthProvider>
-        
+                <Route
+                    path="/affectations/:id/edit"
+                    element={<EditAffectationPage />}
+                />
+            </Routes>
+        </>
     );
 }
 
-export default App;
+/* Root App */
+export default function App() {
+    return (
+        <AuthProvider>
+            <Router>
+                <AppLayout />
+            </Router>
+        </AuthProvider>
+    );
+}

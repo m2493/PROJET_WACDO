@@ -1,6 +1,17 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
 
+import {
+    VStack,
+    FormControl,
+    FormLabel,
+    Select,
+    Input,
+    Button,
+    Spinner,
+    Center,
+} from "@chakra-ui/react";
+
 export default function AssignCollaboratorForm({ onAssign }) {
     const [collaborators, setCollaborators] = useState([]);
     const [jobs, setJobs] = useState([]);
@@ -17,10 +28,8 @@ export default function AssignCollaboratorForm({ onAssign }) {
 
     const loadData = async () => {
         try {
-            const [resC, resJ] = await Promise.all([
-                api.get("/api/collaborators/non-affectes"),
-                api.get("/api/jobs")
-            ]);
+            const resC = await api.get("/api/collaborators/non-affectes");
+            const resJ = await api.get("/api/jobs");
 
             setCollaborators(resC.data);
             setJobs(resJ.data);
@@ -39,82 +48,66 @@ export default function AssignCollaboratorForm({ onAssign }) {
         onAssign({
             collaboratorId: Number(collaboratorId),
             jobId: Number(jobId),
-            startDate
+            startDate,
         });
     };
 
     if (loading) {
-        return <p className="text-sm text-gray-500">Chargement du formulaire...</p>;
+        return (
+            <Center py={10}>
+                <Spinner />
+            </Center>
+        );
     }
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit}>
+            <VStack spacing={5} align="stretch">
 
-            {/* Collaborateur */}
-            <div>
-                <label className="block text-sm font-medium mb-1">
-                    Collaborateur
-                </label>
+                <FormControl isRequired>
+                    <FormLabel>Collaborateur</FormLabel>
+                    <Select
+                        value={collaboratorId}
+                        onChange={(e) => setCollaboratorId(e.target.value)}
+                        placeholder="Sélectionner un collaborateur"
+                    >
+                        {collaborators.map((c) => (
+                            <option key={c.id} value={c.id}>
+                                {c.firstName} {c.lastName}
+                            </option>
+                        ))}
+                    </Select>
+                </FormControl>
 
-                <select
-                    value={collaboratorId}
-                    onChange={(e) => setCollaboratorId(e.target.value)}
-                    required
-                    className="w-full border rounded-lg px-3 py-2 bg-white"
-                >
-                    <option value="">-- Choisir un collaborateur --</option>
-                    {collaborators.map((c) => (
-                        <option key={c.id} value={c.id}>
-                            {c.firstname} {c.lastname}
-                        </option>
-                    ))}
-                </select>
-            </div>
+                <FormControl isRequired>
+                    <FormLabel>Poste</FormLabel>
+                    <Select
+                        value={jobId}
+                        onChange={(e) => setJobId(e.target.value)}
+                        placeholder="Sélectionner un poste"
+                    >
+                        {jobs.map((j) => (
+                            <option key={j.id} value={j.id}>
+                                {j.title}
+                            </option>
+                        ))}
+                    </Select>
+                </FormControl>
 
-            {/* Poste */}
-            <div>
-                <label className="block text-sm font-medium mb-1">
-                    Poste
-                </label>
+                <FormControl isRequired>
+                    <FormLabel>Date de début</FormLabel>
+                    <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                    />
+                </FormControl>
 
-                <select
-                    value={jobId}
-                    onChange={(e) => setJobId(e.target.value)}
-                    required
-                    className="w-full border rounded-lg px-3 py-2 bg-white"
-                >
-                    <option value="">-- Choisir un poste --</option>
-                    {jobs.map((j) => (
-                        <option key={j.id} value={j.id}>
-                            {j.title}
-                        </option>
-                    ))}
-                </select>
-            </div>
+                <Button colorScheme="green" type="submit" w="full">
+                    Affecter
+                </Button>
 
-            {/* Date */}
-            <div>
-                <label className="block text-sm font-medium mb-1">
-                    Date de début
-                </label>
-
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    required
-                    className="w-full border rounded-lg px-3 py-2"
-                />
-            </div>
-
-            {/* Submit */}
-            <button
-                type="submit"
-                disabled={!collaboratorId || !jobId}
-                className="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50"
-            >
-                Affecter
-            </button>
+            </VStack>
         </form>
     );
 }
