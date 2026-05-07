@@ -12,10 +12,11 @@ import { AuthContext } from "../auth/AuthContext";
 
 function Navbar() {
     const navigate = useNavigate();
-    const { logout, isAuthenticated, isAdmin, user } = useContext(AuthContext);
+    const { logout, isAuthenticated, user } = useContext(AuthContext);
+    const isAdmin = user?.admin;
 
     // 🔐 PAS ADMIN → PAS DE NAVBAR
-    if (!isAuthenticated) return null;
+    if (!isAuthenticated || !isAdmin) return null;
 
     const handleLogout = () => {
         logout();

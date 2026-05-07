@@ -2,6 +2,7 @@ package com.marion.wacdo.controller;
 
 import com.marion.wacdo.dto.AuthRequestDTO;
 import com.marion.wacdo.dto.AuthResponseDTO;
+import com.marion.wacdo.entities.Collaborator;
 import com.marion.wacdo.service.JwtUtilService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -32,9 +33,18 @@ public class AuthController {
                 )
         );
 
-        String token =
-                jwtUtilService.generateToken((UserDetails) auth.getPrincipal());
+        Collaborator collaborator =
+                (Collaborator) auth.getPrincipal();
 
-        return ResponseEntity.ok(new AuthResponseDTO(token));
+        String token =
+                jwtUtilService.generateToken(collaborator);
+
+        return ResponseEntity.ok(
+                new AuthResponseDTO(
+                        token,
+                        collaborator.isAdmin(),
+                        collaborator.getEmail()
+                )
+        );
     }
 }

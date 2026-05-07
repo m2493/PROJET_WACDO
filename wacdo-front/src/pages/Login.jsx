@@ -41,7 +41,20 @@ function Login() {
 
             navigate("/restaurant");
         } catch (error) {
-            console.log(error);
+
+            if (error.message === "NOT_ADMIN") {
+
+                toast({
+                    title: "Accès refusé",
+                    description: "Utilisateur non administrateur",
+                    status: "error",
+                    duration: 3000,
+                    isClosable: true,
+                });
+
+                return;
+            }
+
             setError("Identifiants incorrects");
         }
     };

@@ -8,19 +8,30 @@ export function AuthProvider({ children }) {
       !!localStorage.getItem("token")
   );
 
-  const login = async (email, motDePasse) => {
-    const response = await api.post("/login", {
-      email,
-      motDePasse,
-    });
+    const login = async (email, motDePasse) => {
 
-    localStorage.setItem("token", response.data.token);
+        const response = await api.post("/login", {
+            email,
+            motDePasse,
+        });
 
-    // optionnel mais utile pour navbar
-    localStorage.setItem("user", JSON.stringify(response.data.user || { email }));
+        // 🚫 NON ADMIN
+        if (!response.data.admin) {
+            throw new Error("NOT_ADMIN");
+        }
 
-    setIsAuthenticated(true);
-  };
+        localStorage.setItem("token", response.data.token);
+
+        localStorage.setItem(
+            "user",
+            JSON.stringify({
+                email: response.data.email,
+                admin: response.data.admin
+            })
+        );
+
+        setIsAuthenticated(true);
+    };
 
   const logout = () => {
     localStorage.removeItem("token");
