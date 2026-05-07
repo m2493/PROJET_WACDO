@@ -38,7 +38,7 @@ function Navbar() {
 
                 <HStack spacing={4}>
                     <Text fontWeight="medium">
-                        Bonjour {user?.lastName} {user?.firstName}
+                        Bonjour {user?.email}
                     </Text>
 
                     <Button colorScheme="red" size="sm" onClick={handleLogout}>

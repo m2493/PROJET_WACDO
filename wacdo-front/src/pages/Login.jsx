@@ -29,6 +29,11 @@ function Login() {
         e.preventDefault();
         setError("");
 
+        if (!email || !motDePasse) {
+            setError("Veuillez remplir tous les champs");
+            return;
+        }
+
         try {
             await login(email, motDePasse);
 
