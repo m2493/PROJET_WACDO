@@ -12,7 +12,7 @@ import {
   Stack,
   Badge,
   SimpleGrid,
-  useDisclosure,
+  Input,
 } from "@chakra-ui/react";
 
 import Modal from "../../components/Modal";
@@ -23,16 +23,23 @@ export default function RestaurantDetailPage() {
 
   const [restaurant, setRestaurant] = useState(null);
   const [affectations, setAffectations] = useState([]);
-  const [history, setHistory] = useState([]);
+  const [filtered, setFiltered] = useState([]);
+
+  const [filters, setFilters] = useState({
+    name: "",
+    job: "",
+    startDate: "",
+  });
 
   const [loading, setLoading] = useState(true);
-  const [showHistory, setShowHistory] = useState(false);
-
-  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     fetchData();
   }, [id]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [filters, affectations]);
 
   const fetchData = async () => {
     try {
@@ -46,6 +53,7 @@ export default function RestaurantDetailPage() {
 
       setRestaurant(resRestaurant.data);
       setAffectations(resAffectations.data);
+      setFiltered(resAffectations.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -53,20 +61,36 @@ export default function RestaurantDetailPage() {
     }
   };
 
-  const loadHistory = async () => {
-    const res = await api.get("/api/affectations");
+  function applyFilters() {
+    let result = [...affectations];
 
-    setHistory(
-        res.data.filter(
-            (a) => a.restaurantId === Number(id)
-        )
-    );
-  };
+    if (filters.name) {
+      result = result.filter((a) =>
+          `${a.collaboratorFirstName} ${a.collaboratorLastName}`
+              .toLowerCase()
+              .includes(filters.name.toLowerCase())
+      );
+    }
 
-  const handleToggleHistory = () => {
-    setShowHistory(!showHistory);
-    loadHistory();
-  };
+    if (filters.job) {
+      result = result.filter((a) =>
+          a.jobTitle
+              .toLowerCase()
+              .includes(filters.job.toLowerCase())
+      );
+    }
+
+    if (filters.startDate) {
+      result = result.filter((a) =>
+          a.startDateAffectation
+              ?.includes(filters.startDate)
+      );
+    }
+
+    setFiltered(result);
+  }
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const handleAssign = async (data) => {
     try {
@@ -78,7 +102,7 @@ export default function RestaurantDetailPage() {
         data.startDateAffectation,
       });
 
-      onClose();
+      setIsOpen(false);
       fetchData();
     } catch (err) {
       console.error(err);
@@ -101,10 +125,6 @@ export default function RestaurantDetailPage() {
     );
   }
 
-  const dataToShow = showHistory
-      ? history
-      : affectations;
-
   return (
       <Box p={6}>
         {/* HEADER */}
@@ -116,24 +136,68 @@ export default function RestaurantDetailPage() {
           {restaurant.city} • {restaurant.address}
         </Text>
 
-        {/* ACTIONS */}
-        <Stack direction="row" spacing={3} mb={6}>
-          <Button colorScheme="yellow" onClick={onOpen}>
-            Affecter
-          </Button>
+        {/* ACTION */}
+        <Button
+            colorScheme="yellow"
+            mb={6}
+            onClick={() => setIsOpen(true)}
+        >
+          Affecter
+        </Button>
 
-          <Button
-              colorScheme={showHistory ? "blue" : "gray"}
-              onClick={handleToggleHistory}
+        {/* FILTRES */}
+        <Box
+            mb={6}
+            p={4}
+            borderWidth="1px"
+            borderRadius="lg"
+            bg="gray.50"
+        >
+          <Text fontWeight="bold" mb={3}>
+            Recherche
+          </Text>
+
+          <Stack
+              direction={{ base: "column", md: "row" }}
+              spacing={3}
           >
-            {showHistory
-                ? "Voir actuel"
-                : "Historique"}
-          </Button>
-        </Stack>
+            <Input
+                placeholder="Nom collaborateur"
+                value={filters.name}
+                onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      name: e.target.value,
+                    })
+                }
+            />
+
+            <Input
+                placeholder="Poste"
+                value={filters.job}
+                onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      job: e.target.value,
+                    })
+                }
+            />
+
+            <Input
+                type="date"
+                value={filters.startDate}
+                onChange={(e) =>
+                    setFilters({
+                      ...filters,
+                      startDate: e.target.value,
+                    })
+                }
+            />
+          </Stack>
+        </Box>
 
         {/* LIST */}
-        {dataToShow.length === 0 ? (
+        {filtered.length === 0 ? (
             <Center
                 p={10}
                 borderWidth="1px"
@@ -148,7 +212,7 @@ export default function RestaurantDetailPage() {
                 columns={{ base: 1, md: 2 }}
                 spacing={4}
             >
-              {dataToShow.map((a) => (
+              {filtered.map((a) => (
                   <Box
                       key={a.id}
                       p={4}
@@ -166,23 +230,15 @@ export default function RestaurantDetailPage() {
                       </Text>
 
                       <Text fontSize="sm" color="gray.500">
-                        {a.startDateAffectation}{" "}
+                        {a.startDateAffectation}
                         {a.endDateAffectation && (
-                            <>
-                              → {a.endDateAffectation}
-                            </>
+                            <> → {a.endDateAffectation}</>
                         )}
                       </Text>
 
-                      {showHistory ? (
-                          <Badge colorScheme="gray">
-                            Terminé
-                          </Badge>
-                      ) : (
-                          <Badge colorScheme="green">
-                            Actif
-                          </Badge>
-                      )}
+                      <Badge colorScheme="green">
+                        Actif
+                      </Badge>
                     </Stack>
                   </Box>
               ))}
@@ -193,7 +249,7 @@ export default function RestaurantDetailPage() {
         {isOpen && (
             <Modal
                 title="Affecter un collaborateur"
-                onClose={onClose}
+                onClose={() => setIsOpen(false)}
             >
               <AssignCollaboratorForm
                   onAssign={handleAssign}

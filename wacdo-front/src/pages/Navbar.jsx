@@ -28,9 +28,9 @@ function Navbar() {
             <Flex align="center">
 
                 <HStack spacing={6}>
+                    <NavLink to="/restaurant">Restaurants</NavLink>
                     <NavLink to="/collaborator">Collaborateurs</NavLink>
                     <NavLink to="/function">Fonctions</NavLink>
-                    <NavLink to="/restaurant">Restaurants</NavLink>
                     <NavLink to="/affectation">Affectations</NavLink>
                 </HStack>
 

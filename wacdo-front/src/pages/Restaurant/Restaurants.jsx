@@ -11,33 +11,74 @@ import {
     SimpleGrid,
     Text,
     Stack,
+    Input,
+    HStack,
 } from "@chakra-ui/react";
 
 export default function RestaurantListPage() {
     const [restaurants, setRestaurants] = useState([]);
+    const [filtered, setFiltered] = useState([]);
     const [loading, setLoading] = useState(true);
+
+    const [filters, setFilters] = useState({
+        name: "",
+        city: "",
+        postalCode: "",
+    });
+
     const navigate = useNavigate();
 
     useEffect(() => {
-        async function fetchRestaurants() {
-            try {
-                const res = await api.get("/api/restaurants");
-
-                const data =
-                    typeof res.data === "string"
-                        ? JSON.parse(res.data)
-                        : res.data;
-
-                setRestaurants(data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        }
-
         fetchRestaurants();
     }, []);
+
+    useEffect(() => {
+        applyFilters();
+    }, [filters, restaurants]);
+
+    async function fetchRestaurants() {
+        try {
+            const res = await api.get("/api/restaurants");
+
+            const data =
+                typeof res.data === "string"
+                    ? JSON.parse(res.data)
+                    : res.data;
+
+            setRestaurants(data);
+            setFiltered(data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    function applyFilters() {
+        let result = [...restaurants];
+
+        if (filters.name) {
+            result = result.filter((r) =>
+                r.name.toLowerCase().includes(filters.name.toLowerCase())
+            );
+        }
+
+        if (filters.city) {
+            result = result.filter((r) =>
+                r.city.toLowerCase().includes(filters.city.toLowerCase())
+            );
+        }
+
+        if (filters.postalCode) {
+            result = result.filter((r) =>
+                r.postalCode
+                    .toLowerCase()
+                    .includes(filters.postalCode.toLowerCase())
+            );
+        }
+
+        setFiltered(result);
+    }
 
     if (loading) {
         return (
@@ -56,9 +97,7 @@ export default function RestaurantListPage() {
                 alignItems="center"
                 mb={6}
             >
-                <Heading size="lg">
-                    Restaurants
-                </Heading>
+                <Heading size="lg">Restaurants</Heading>
 
                 <Button
                     colorScheme="blue"
@@ -70,8 +109,59 @@ export default function RestaurantListPage() {
                 </Button>
             </Box>
 
+            {/* FILTRES */}
+            <Box
+                mb={6}
+                p={4}
+                borderWidth="1px"
+                borderRadius="lg"
+                bg="gray.50"
+            >
+                <Text fontWeight="bold" mb={3}>
+                    Recherche
+                </Text>
+
+                <Stack
+                    direction={{ base: "column", md: "row" }}
+                    spacing={3}
+                >
+                    <Input
+                        placeholder="Nom"
+                        value={filters.name}
+                        onChange={(e) =>
+                            setFilters({
+                                ...filters,
+                                name: e.target.value,
+                            })
+                        }
+                    />
+
+                    <Input
+                        placeholder="Ville"
+                        value={filters.city}
+                        onChange={(e) =>
+                            setFilters({
+                                ...filters,
+                                city: e.target.value,
+                            })
+                        }
+                    />
+
+                    <Input
+                        placeholder="Code postal"
+                        value={filters.postalCode}
+                        onChange={(e) =>
+                            setFilters({
+                                ...filters,
+                                postalCode: e.target.value,
+                            })
+                        }
+                    />
+                </Stack>
+            </Box>
+
             {/* EMPTY STATE */}
-            {restaurants.length === 0 ? (
+            {filtered.length === 0 ? (
                 <Center
                     p={10}
                     borderWidth="1px"
@@ -84,7 +174,7 @@ export default function RestaurantListPage() {
                     columns={{ base: 1, md: 2, lg: 3 }}
                     spacing={4}
                 >
-                    {restaurants.map((r) => (
+                    {filtered.map((r) => (
                         <Box
                             key={r.id}
                             p={4}
@@ -93,11 +183,14 @@ export default function RestaurantListPage() {
                             cursor="pointer"
                             _hover={{
                                 shadow: "md",
-                                transform: "translateY(-2px)",
+                                transform:
+                                    "translateY(-2px)",
                             }}
                             transition="0.2s"
                             onClick={() =>
-                                navigate(`/restaurants/${r.id}`)
+                                navigate(
+                                    `/restaurants/${r.id}`
+                                )
                             }
                         >
                             <Stack spacing={1}>
@@ -105,12 +198,19 @@ export default function RestaurantListPage() {
                                     {r.name}
                                 </Heading>
 
-                                <Text fontSize="sm" color="gray.600">
+                                <Text
+                                    fontSize="sm"
+                                    color="gray.600"
+                                >
                                     {r.address}
                                 </Text>
 
-                                <Text fontSize="sm" color="gray.500">
-                                    {r.city} - {r.postalCode}
+                                <Text
+                                    fontSize="sm"
+                                    color="gray.500"
+                                >
+                                    {r.city} -{" "}
+                                    {r.postalCode}
                                 </Text>
                             </Stack>
                         </Box>

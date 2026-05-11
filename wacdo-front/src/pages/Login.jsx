@@ -83,11 +83,11 @@ function Login() {
                 <VStack spacing={6} align="stretch">
 
                     <Heading textAlign="center" size="lg">
-                        Connexion Admin
+                        Portail Administrateur Wacdo
                     </Heading>
 
                     <Text textAlign="center" color="gray.500">
-                        Accédez à votre espace sécurisé
+                        Identifiants pour tester l'application EMAIL : johndoe@gmail.com, MDP : test
                     </Text>
 
                     <form onSubmit={handleSubmit}>
