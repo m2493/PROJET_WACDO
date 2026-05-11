@@ -22,7 +22,14 @@ export default function CreateFunctionPage() {
   };
 
   const validationSchema = Yup.object({
-    labelFunction: Yup.string().required("Le libellé est requis"),
+    labelFunction: Yup.string()
+        .strict(true)
+        .required("Le libellé est requis")
+        .min(2, "Le libellé doit contenir au moins 2 caractères")
+        .matches(
+            /^(?!\d+$).+/,
+            "Le libellé ne peut pas contenir uniquement des chiffres"
+        )
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {

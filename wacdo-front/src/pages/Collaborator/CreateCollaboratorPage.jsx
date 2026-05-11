@@ -25,10 +25,45 @@ export default function CreateCollaboratorPage() {
   };
 
   const validationSchema = Yup.object({
-    lastName: Yup.string().required("Le nom est requis"),
-    firstName: Yup.string().required("Le prénom est requis"),
-    email: Yup.string().required("L'email est requis"),
-    password: Yup.string().required("Le mot de passe est requis"),
+    firstName: Yup.string()
+        .strict(true)
+        .trim()
+        .required("Le prénom est requis")
+        .min(2, "Le prénom doit contenir au moins 2 caractères")
+        .max(50, "Le prénom est trop long")
+        .matches(
+            /^(?!\d+$).+/,
+            "Le prénom ne peut pas contenir uniquement des chiffres"
+        ),
+
+    lastName: Yup.string()
+        .strict(true)
+        .trim()
+        .required("Le nom est requis")
+        .min(2, "Le nom doit contenir au moins 2 caractères")
+        .max(50, "Le nom est trop long")
+        .matches(
+            /^(?!\d+$).+/,
+            "Le nom ne peut pas contenir uniquement des chiffres"
+        ),
+
+    email: Yup.string()
+        .strict(true)
+        .trim()
+        .lowercase()
+        .required("L'email est requis")
+        .email("Adresse email invalide"),
+
+    password: Yup.string()
+        .required("Le mot de passe est requis")
+        .min(8, "Le mot de passe doit contenir au moins 8 caractères")
+        .matches(/[A-Z]/, "Le mot de passe doit contenir une majuscule")
+        .matches(/[a-z]/, "Le mot de passe doit contenir une minuscule")
+        .matches(/[0-9]/, "Le mot de passe doit contenir un chiffre")
+        .matches(
+            /[^A-Za-z0-9]/,
+            "Le mot de passe doit contenir un caractère spécial"
+        ),
   });
 
   const handleSubmit = async (values, { setSubmitting }) => {

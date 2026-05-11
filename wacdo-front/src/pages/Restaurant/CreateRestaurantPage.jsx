@@ -16,10 +16,37 @@ export default function CreateRestaurantPage() {
   };
 
   const validationSchema = Yup.object({
-    name: Yup.string().required("Le nom est requis"),
-    address: Yup.string().required("L'adresse est requise"),
-    city: Yup.string().required("La ville est requise"),
-    postalCode: Yup.string().required("Le code postal est requis"),
+    name: Yup.string()
+        .strict(true)
+        .required("Le nom est requis")
+        .min(2, "Le nom doit contenir au moins 2 caractères")
+        .matches(
+        /^(?!\d+$).+/,
+        "Le nom ne peut pas contenir uniquement des chiffres"
+    ),
+    address: Yup.string()
+        .strict(true)
+        .required("L'adresse est requise")
+        .min(2, "L'adresse doit contenir au moins 2 caractères")
+        .matches(
+        /^(?!\d+$).+/,
+        "L'adresse ne peut pas contenir uniquement des chiffres"
+    ),
+    city: Yup.string()
+        .strict(true)
+        .required("La ville est requise")
+        .matches(
+        /^(?!\d+$).+/,
+        "L'adresse ne peut pas contenir uniquement des chiffres"),
+    postalCode: Yup.string()
+        .required("Le code postal est requis")
+        .matches(
+            /^[0-9]{5}(?:[0-9]{3})?$/,
+            {
+              message: "Code postal invalide",
+              excludeEmptyString: true,
+            }
+        )
   });
 
   const handleSubmit = async (values) => {
