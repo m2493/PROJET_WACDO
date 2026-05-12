@@ -42,7 +42,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/login").permitAll()
-                        .anyRequest().hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 )
 
                 .addFilterBefore(

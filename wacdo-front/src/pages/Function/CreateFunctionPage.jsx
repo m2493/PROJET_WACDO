@@ -1,6 +1,5 @@
 import { Formik, Form } from "formik";
 import * as Yup from "yup";
-import api from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 
 import {
@@ -12,29 +11,32 @@ import {
 } from "@chakra-ui/react";
 
 import FormInput from "../../components/forms/FormInput";
+import { useJobs } from "../../hooks/useJobs";
+
+// 🔥 factorisation règle
+const noOnlyNumbers = (label) =>
+    Yup.string()
+        .required(`${label} est requis`)
+        .min(2, `${label} doit contenir au moins 2 caractères`)
+        .matches(/^(?!\d+$).+/, `${label} ne peut pas être uniquement des chiffres`);
+
+const validationSchema = Yup.object({
+  labelFunction: noOnlyNumbers("Le libellé"),
+});
 
 export default function CreateFunctionPage() {
   const navigate = useNavigate();
   const toast = useToast();
 
+  const { createJob } = useJobs();
+
   const initialValues = {
     labelFunction: "",
   };
 
-  const validationSchema = Yup.object({
-    labelFunction: Yup.string()
-        .strict(true)
-        .required("Le libellé est requis")
-        .min(2, "Le libellé doit contenir au moins 2 caractères")
-        .matches(
-            /^(?!\d+$).+/,
-            "Le libellé ne peut pas contenir uniquement des chiffres"
-        )
-  });
-
   const handleSubmit = async (values, { setSubmitting }) => {
     try {
-      await api.post("/api/jobs", values);
+      await createJob(values);
 
       toast({
         title: "Fonction créée",
@@ -66,14 +68,8 @@ export default function CreateFunctionPage() {
           Créer une fonction
         </Heading>
 
-        {/* FORM CARD */}
-        <Box
-            bg="white"
-            p={6}
-            borderWidth="1px"
-            borderRadius="lg"
-            shadow="sm"
-        >
+        {/* FORM */}
+        <Box borderWidth="1px" borderRadius="lg" p={6}>
           <Formik
               initialValues={initialValues}
               validationSchema={validationSchema}

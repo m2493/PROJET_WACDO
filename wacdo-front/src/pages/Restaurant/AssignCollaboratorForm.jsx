@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import api from "../api/axios";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 
 import {
     VStack,
@@ -12,14 +14,15 @@ import {
     Center,
 } from "@chakra-ui/react";
 
+const validationSchema = Yup.object({
+    collaboratorId: Yup.number().required("Collaborateur requis"),
+    jobId: Yup.number().required("Poste requis"),
+    startDate: Yup.string().required("Date requise"),
+});
+
 export default function AssignCollaboratorForm({ onAssign }) {
     const [collaborators, setCollaborators] = useState([]);
     const [jobs, setJobs] = useState([]);
-
-    const [collaboratorId, setCollaboratorId] = useState("");
-    const [jobId, setJobId] = useState("");
-    const [startDate, setStartDate] = useState("");
-
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -33,8 +36,6 @@ export default function AssignCollaboratorForm({ onAssign }) {
 
             setCollaborators(resC.data);
             setJobs(resJ.data);
-
-            setStartDate(new Date().toISOString().split("T")[0]);
         } catch (err) {
             console.error(err);
         } finally {
@@ -42,13 +43,17 @@ export default function AssignCollaboratorForm({ onAssign }) {
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const initialValues = {
+        collaboratorId: "",
+        jobId: "",
+        startDate: new Date().toISOString().split("T")[0],
+    };
 
+    const handleSubmit = (values) => {
         onAssign({
-            collaboratorId: Number(collaboratorId),
-            jobId: Number(jobId),
-            startDate,
+            collaboratorId: Number(values.collaboratorId),
+            jobId: Number(values.jobId),
+            startDate: values.startDate,
         });
     };
 
@@ -61,53 +66,68 @@ export default function AssignCollaboratorForm({ onAssign }) {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-            <VStack spacing={5} align="stretch">
+        <Formik
+            initialValues={initialValues}
+            validationSchema={validationSchema}
+            onSubmit={handleSubmit}
+        >
+            {({ values, handleChange }) => (
+                <Form>
+                    <VStack spacing={5} align="stretch">
 
-                <FormControl isRequired>
-                    <FormLabel>Collaborateur</FormLabel>
-                    <Select
-                        value={collaboratorId}
-                        onChange={(e) => setCollaboratorId(e.target.value)}
-                        placeholder="Sélectionner un collaborateur"
-                    >
-                        {collaborators.map((c) => (
-                            <option key={c.id} value={c.id}>
-                                {c.firstName} {c.lastName}
-                            </option>
-                        ))}
-                    </Select>
-                </FormControl>
+                        {/* COLLABORATEUR */}
+                        <FormControl isRequired>
+                            <FormLabel>Collaborateur</FormLabel>
+                            <Select
+                                name="collaboratorId"
+                                value={values.collaboratorId}
+                                onChange={handleChange}
+                                placeholder="Sélectionner un collaborateur"
+                            >
+                                {collaborators.map((c) => (
+                                    <option key={c.id} value={c.id}>
+                                        {c.firstName} {c.lastName}
+                                    </option>
+                                ))}
+                            </Select>
+                        </FormControl>
 
-                <FormControl isRequired>
-                    <FormLabel>Poste</FormLabel>
-                    <Select
-                        value={jobId}
-                        onChange={(e) => setJobId(e.target.value)}
-                        placeholder="Sélectionner un poste"
-                    >
-                        {jobs.map((j) => (
-                            <option key={j.id} value={j.id}>
-                                {j.title}
-                            </option>
-                        ))}
-                    </Select>
-                </FormControl>
+                        {/* POSTE */}
+                        <FormControl isRequired>
+                            <FormLabel>Poste</FormLabel>
+                            <Select
+                                name="jobId"
+                                value={values.jobId}
+                                onChange={handleChange}
+                                placeholder="Sélectionner un poste"
+                            >
+                                {jobs.map((j) => (
+                                    <option key={j.id} value={j.id}>
+                                        {j.title}
+                                    </option>
+                                ))}
+                            </Select>
+                        </FormControl>
 
-                <FormControl isRequired>
-                    <FormLabel>Date de début</FormLabel>
-                    <Input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => setStartDate(e.target.value)}
-                    />
-                </FormControl>
+                        {/* DATE */}
+                        <FormControl isRequired>
+                            <FormLabel>Date de début</FormLabel>
+                            <Input
+                                type="date"
+                                name="startDate"
+                                value={values.startDate}
+                                onChange={handleChange}
+                            />
+                        </FormControl>
 
-                <Button colorScheme="green" type="submit" w="full">
-                    Affecter
-                </Button>
+                        {/* SUBMIT */}
+                        <Button colorScheme="green" type="submit" w="full">
+                            Affecter
+                        </Button>
 
-            </VStack>
-        </form>
+                    </VStack>
+                </Form>
+            )}
+        </Formik>
     );
 }

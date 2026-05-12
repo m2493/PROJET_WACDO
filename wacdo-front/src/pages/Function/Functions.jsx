@@ -1,13 +1,10 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios";
-import ListWithFilter from "../../components/ListWithFilter";
 
 import {
   Box,
   Heading,
   Button,
-  Stack,
   Text,
   Input,
   Modal,
@@ -20,72 +17,38 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 
+import { useJobs } from "../../hooks/useJobs";
+
 export default function FunctionsListPage() {
-  const [functions, setFunctions] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: functions, loading, updateJob } = useJobs();
 
   const [selectedItem, setSelectedItem] = useState(null);
   const [labelFunction, setLabelFunction] = useState("");
-  const [saving, setSaving] = useState(false);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchFunctions();
-  }, []);
-
-  async function fetchFunctions() {
-    try {
-      const res = await api.get("/api/jobs");
-      setFunctions(res.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  function openEditModal(item) {
+  const openEditModal = (item) => {
     setSelectedItem(item);
     setLabelFunction(item.labelFunction);
     onOpen();
-  }
+  };
 
-  function closeModal() {
-    onClose();
+  const closeModal = () => {
     setSelectedItem(null);
     setLabelFunction("");
-  }
+    onClose();
+  };
 
-  async function handleSubmit(e) {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!labelFunction.trim()) return;
 
-    try {
-      setSaving(true);
+    await updateJob(selectedItem.id, {
+      labelFunction,
+    });
 
-      const res = await api.put(`/api/jobs/${selectedItem.id}`, {
-        id: selectedItem.id,
-        labelFunction,
-      });
-
-      const updated = res.data;
-
-      setFunctions((prev) =>
-          prev.map((item) =>
-              item.id === updated.id ? updated : item
-          )
-      );
-
-      closeModal();
-    } catch (err) {
-      console.error(err);
-      alert("Erreur lors de la modification");
-    } finally {
-      setSaving(false);
-    }
-  }
+    closeModal();
+  };
 
   if (loading) {
     return (
@@ -98,7 +61,7 @@ export default function FunctionsListPage() {
   return (
       <Box p={6}>
         {/* HEADER */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={6}>
+        <Box display="flex" justifyContent="space-between" mb={6}>
           <Heading size="lg">Liste des fonctions</Heading>
 
           <Button
@@ -110,30 +73,26 @@ export default function FunctionsListPage() {
         </Box>
 
         {/* LISTE */}
-        <ListWithFilter
-            items={functions}
-            renderItem={(item) => (
-                <Box key={item.id} mb={4}>
-                  <Box
-                      p={4}
-                      borderWidth="1px"
-                      borderRadius="lg"
-                      shadow="sm"
-                  >
-                    <Text fontWeight="bold">{item.labelFunction}</Text>
+        {functions.map((item) => (
+            <Box
+                key={item.id}
+                p={4}
+                borderWidth="1px"
+                borderRadius="lg"
+                mb={4}
+            >
+              <Text fontWeight="bold">{item.labelFunction}</Text>
 
-                    <Button
-                        mt={3}
-                        size="sm"
-                        colorScheme="yellow"
-                        onClick={() => openEditModal(item)}
-                    >
-                      Modifier
-                    </Button>
-                  </Box>
-                </Box>
-            )}
-        />
+              <Button
+                  mt={3}
+                  size="sm"
+                  colorScheme="yellow"
+                  onClick={() => openEditModal(item)}
+              >
+                Modifier
+              </Button>
+            </Box>
+        ))}
 
         {/* MODAL */}
         <Modal isOpen={isOpen} onClose={closeModal} isCentered>
@@ -144,14 +103,11 @@ export default function FunctionsListPage() {
             <ModalCloseButton />
 
             <ModalBody>
-              <Stack spacing={3}>
-                <Text>Libellé</Text>
-                <Input
-                    value={labelFunction}
-                    onChange={(e) => setLabelFunction(e.target.value)}
-                    placeholder="Ex: Manager"
-                />
-              </Stack>
+              <Input
+                  value={labelFunction}
+                  onChange={(e) => setLabelFunction(e.target.value)}
+                  placeholder="Ex: Manager"
+              />
             </ModalBody>
 
             <ModalFooter gap={2}>
@@ -159,11 +115,7 @@ export default function FunctionsListPage() {
                 Annuler
               </Button>
 
-              <Button
-                  colorScheme="green"
-                  onClick={handleSubmit}
-                  isLoading={saving}
-              >
+              <Button colorScheme="green" onClick={handleSubmit}>
                 Sauvegarder
               </Button>
             </ModalFooter>

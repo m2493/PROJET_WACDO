@@ -15,6 +15,8 @@ export default function FunctionDetailPage() {
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
 
+  console.log("Je suis utilisé");
+
   useEffect(() => {
     fetchData();
   }, [id]);

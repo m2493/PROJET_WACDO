@@ -1,261 +1,153 @@
-import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api from "../../api/axios";
-
 import {
-  Box,
-  Heading,
-  Button,
-  Text,
-  Spinner,
-  Center,
-  Stack,
-  Badge,
-  SimpleGrid,
-  Input,
+    Box,
+    Heading,
+    Button,
+    Text,
+    Spinner,
+    Center,
+    Stack,
+    SimpleGrid, Input,
 } from "@chakra-ui/react";
 
 import Modal from "../../components/Modal";
 import AssignCollaboratorForm from "../../components/forms/AssignCollaboratorForm";
 
+import { useDisclosure } from "@chakra-ui/react";
+
+import { useRestaurantDetail } from "../../hooks/useRestaurantDetail";
+import { useAffectations } from "../../hooks/useAffectations";
+import {useMemo, useState} from "react";
+
 export default function RestaurantDetailPage() {
-  const { id } = useParams();
+    const { id } = useParams();
 
-  const [restaurant, setRestaurant] = useState(null);
-  const [affectations, setAffectations] = useState([]);
-  const [filtered, setFiltered] = useState([]);
+    const { restaurant, loading } = useRestaurantDetail(id);
+    const { data: affectations, addAffectation } = useAffectations(id);
 
-  const [filters, setFilters] = useState({
-    name: "",
-    job: "",
-    startDate: "",
-  });
+    const [jobFilter, setJobFilter] = useState("");
+    const [lastNameFilter, setLastNameFilter] = useState("");
+    const [dateFilter, setDateFilter] = useState("");
 
-  const [loading, setLoading] = useState(true);
+    const { isOpen, onOpen, onClose } = useDisclosure();
 
-  useEffect(() => {
-    fetchData();
-  }, [id]);
+    const filteredAffectations = useMemo(() => {
+        if (!affectations) return [];
 
-  useEffect(() => {
-    applyFilters();
-  }, [filters, affectations]);
+        return affectations.filter((a) => {
+            const matchJob =
+                jobFilter === "" ||
+                a.jobTitle?.toLowerCase().includes(jobFilter.toLowerCase());
 
-  const fetchData = async () => {
-    try {
-      const resRestaurant = await api.get(
-          `/api/restaurants/${id}`
-      );
+            const matchLastName =
+                lastNameFilter === "" ||
+                a.collaboratorLastName?.toLowerCase().includes(lastNameFilter.toLowerCase());
 
-      const resAffectations = await api.get(
-          `/api/affectations/restaurant/${id}/current`
-      );
+            const matchDate =
+                dateFilter === "" ||
+                a.startDateAffectation?.startsWith(dateFilter);
 
-      setRestaurant(resRestaurant.data);
-      setAffectations(resAffectations.data);
-      setFiltered(resAffectations.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+            return matchJob && matchLastName && matchDate;
+        });
+    }, [affectations, jobFilter, lastNameFilter, dateFilter]);
 
-  function applyFilters() {
-    let result = [...affectations];
+    const handleAssign = async (data) => {
+        await addAffectation({
+            collaboratorId: data.collaboratorId,
+            restaurantId: Number(id),
+            jobId: data.jobId,
+            startDateAffectation: data.startDateAffectation,
+        });
 
-    if (filters.name) {
-      result = result.filter((a) =>
-          `${a.collaboratorFirstName} ${a.collaboratorLastName}`
-              .toLowerCase()
-              .includes(filters.name.toLowerCase())
-      );
+        onClose();
+    };
+
+    if (loading) {
+        return (
+            <Center h="200px">
+                <Spinner size="xl" />
+            </Center>
+        );
     }
 
-    if (filters.job) {
-      result = result.filter((a) =>
-          a.jobTitle
-              .toLowerCase()
-              .includes(filters.job.toLowerCase())
-      );
+    if (!restaurant) {
+        return (
+            <Center h="200px">
+                <Text>Restaurant introuvable</Text>
+            </Center>
+        );
     }
 
-    if (filters.startDate) {
-      result = result.filter((a) =>
-          a.startDateAffectation
-              ?.includes(filters.startDate)
-      );
-    }
-
-    setFiltered(result);
-  }
-
-  const [isOpen, setIsOpen] = useState(false);
-
-  const handleAssign = async (data) => {
-    try {
-      await api.post("/api/affectations", {
-        collaboratorId: data.collaboratorId,
-        restaurantId: Number(id),
-        jobId: data.jobId,
-        startDateAffectation:
-        data.startDateAffectation,
-      });
-
-      setIsOpen(false);
-      fetchData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  if (loading) {
     return (
-        <Center h="200px">
-          <Spinner size="xl" />
-        </Center>
-    );
-  }
 
-  if (!restaurant) {
-    return (
-        <Center h="200px">
-          <Text>Restaurant introuvable</Text>
-        </Center>
-    );
-  }
+        <Box p={6}>
 
-  return (
-      <Box p={6}>
-        {/* HEADER */}
-        <Heading size="lg" mb={1}>
-          {restaurant.name}
-        </Heading>
+            <Box p={5} borderWidth="1px" borderRadius="lg" mb={6}>
+                <Heading size="md">
+                    {restaurant.name}
+                </Heading>
+                <Text color="gray.600">{restaurant.city} • {restaurant.address}</Text>
+            </Box>
 
-        <Text color="gray.600" mb={6}>
-          {restaurant.city} • {restaurant.address}
-        </Text>
+            {/* FILTERS */}
 
-        {/* ACTION */}
-        <Button
-            colorScheme="yellow"
-            mb={6}
-            onClick={() => setIsOpen(true)}
-        >
-          Affecter
-        </Button>
-
-        {/* FILTRES */}
-        <Box
-            mb={6}
-            p={4}
-            borderWidth="1px"
-            borderRadius="lg"
-            bg="gray.50"
-        >
-          <Text fontWeight="bold" mb={3}>
-            Recherche
-          </Text>
-
-          <Stack
-              direction={{ base: "column", md: "row" }}
-              spacing={3}
-          >
-            <Input
-                placeholder="Nom collaborateur"
-                value={filters.name}
-                onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      name: e.target.value,
-                    })
-                }
-            />
-
-            <Input
-                placeholder="Poste"
-                value={filters.job}
-                onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      job: e.target.value,
-                    })
-                }
-            />
-
-            <Input
-                type="date"
-                value={filters.startDate}
-                onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      startDate: e.target.value,
-                    })
-                }
-            />
-          </Stack>
-        </Box>
-
-        {/* LIST */}
-        {filtered.length === 0 ? (
-            <Center
-                p={10}
+            <Box
+                p={4}
+                mb={6}
                 borderWidth="1px"
                 borderRadius="lg"
+                bg="gray.50"
             >
-              <Text>
-                Aucune affectation à afficher
-              </Text>
-            </Center>
-        ) : (
-            <SimpleGrid
-                columns={{ base: 1, md: 2 }}
-                spacing={4}
-            >
-              {filtered.map((a) => (
-                  <Box
-                      key={a.id}
-                      p={4}
-                      borderWidth="1px"
-                      borderRadius="lg"
-                  >
-                    <Stack spacing={1}>
-                      <Text fontWeight="bold">
-                        {a.collaboratorFirstName}{" "}
-                        {a.collaboratorLastName}
-                      </Text>
 
-                      <Text fontSize="sm" color="gray.600">
-                        {a.jobTitle}
-                      </Text>
+                <Stack direction={{ base: "column", md: "row" }} spacing={3}>
+                    <Input
+                        placeholder="Filtrer par poste"
+                        value={jobFilter}
+                        onChange={(e) => setJobFilter(e.target.value)}
+                    />
 
-                      <Text fontSize="sm" color="gray.500">
-                        {a.startDateAffectation}
-                        {a.endDateAffectation && (
-                            <> → {a.endDateAffectation}</>
-                        )}
-                      </Text>
+                    <Input
+                        placeholder="Nom"
+                        value={lastNameFilter}
+                        onChange={(e) => setLastNameFilter(e.target.value)}
+                    />
 
-                      <Badge colorScheme="green">
-                        Actif
-                      </Badge>
-                    </Stack>
-                  </Box>
-              ))}
+                    <Input
+                        type="date"
+                        value={dateFilter}
+                        onChange={(e) => setDateFilter(e.target.value)}
+                    />
+                </Stack>
+            </Box>
+
+
+            <Button colorScheme="yellow" mb={6} onClick={onOpen}>
+                Affecter un collaborateur
+            </Button>
+
+            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                {filteredAffectations.map((a) => (
+                    <Box key={a.id} p={4} borderWidth="1px" borderRadius="lg">
+                        <Stack>
+                            <Text fontWeight="bold">
+                                {a.collaboratorFirstName} {a.collaboratorLastName}
+                            </Text>
+
+                            <Text fontSize="sm">{a.jobTitle}</Text>
+
+                            <Text fontSize="sm" color="gray.500">
+                                {a.startDateAffectation}
+                            </Text>
+                        </Stack>
+                    </Box>
+                ))}
             </SimpleGrid>
-        )}
 
-        {/* MODAL */}
-        {isOpen && (
-            <Modal
-                title="Affecter un collaborateur"
-                onClose={() => setIsOpen(false)}
-            >
-              <AssignCollaboratorForm
-                  onAssign={handleAssign}
-              />
-            </Modal>
-        )}
-      </Box>
-  );
+            {isOpen && (
+                <Modal title="Affecter un collaborateur" onClose={onClose}>
+                    <AssignCollaboratorForm onAssign={handleAssign} />
+                </Modal>
+            )}
+        </Box>
+    );
 }

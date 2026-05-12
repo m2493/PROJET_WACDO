@@ -1,26 +1,25 @@
-import { useEffect, useState } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../api/axios";
-
 import {
     Box,
     Button,
     Heading,
     Input,
     SimpleGrid,
-    Stack,
     Text,
     Spinner,
     Center,
     HStack,
-    useToast,
+    Stack,
 } from "@chakra-ui/react";
 
-export default function CollaboratorListPage() {
-    const [collaborators, setCollaborators] = useState([]);
-    const [filtered, setFiltered] = useState([]);
+import { useCollaborators } from "../../hooks/useCollaborators";
 
-    const [loading, setLoading] = useState(true);
+export default function CollaboratorListPage() {
+    const { data: collaborators, loading, fetchNonAffectes } =
+        useCollaborators();
+
+    const navigate = useNavigate();
 
     const [filters, setFilters] = useState({
         lastName: "",
@@ -28,93 +27,15 @@ export default function CollaboratorListPage() {
         email: "",
     });
 
-    const navigate = useNavigate();
-    const toast = useToast();
-
-    useEffect(() => {
-        fetchCollaborators();
-    }, []);
-
-    useEffect(() => {
-        applyFilters();
-    }, [filters, collaborators]);
-
-    async function fetchCollaborators() {
-        try {
-            const res = await api.get("/api/collaborators");
-
-            const data =
-                typeof res.data === "string"
-                    ? JSON.parse(res.data)
-                    : res.data;
-
-            setCollaborators(data);
-            setFiltered(data);
-        } catch (err) {
-            console.error(err);
-
-            toast({
-                title: "Erreur",
-                description: "Impossible de charger les collaborateurs",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    async function fetchNonAffectes() {
-        try {
-            setLoading(true);
-
-            const res = await api.get("/api/collaborators/non-affectes");
-
-            const data =
-                typeof res.data === "string"
-                    ? JSON.parse(res.data)
-                    : res.data;
-
-            setCollaborators(data);
-        } catch (err) {
-            console.error(err);
-
-            toast({
-                title: "Erreur",
-                description: "Impossible de filtrer les collaborateurs",
-                status: "error",
-                duration: 3000,
-                isClosable: true,
-            });
-        } finally {
-            setLoading(false);
-        }
-    }
-
-    function applyFilters() {
-        let result = [...collaborators];
-
-        if (filters.lastName) {
-            result = result.filter((c) =>
-                c.lastName.toLowerCase().includes(filters.lastName.toLowerCase())
-            );
-        }
-
-        if (filters.firstName) {
-            result = result.filter((c) =>
-                c.firstName.toLowerCase().includes(filters.firstName.toLowerCase())
-            );
-        }
-
-        if (filters.email) {
-            result = result.filter((c) =>
+    const filtered = useMemo(() => {
+        return collaborators.filter((c) => {
+            return (
+                c.lastName.toLowerCase().includes(filters.lastName.toLowerCase()) &&
+                c.firstName.toLowerCase().includes(filters.firstName.toLowerCase()) &&
                 c.email.toLowerCase().includes(filters.email.toLowerCase())
             );
-        }
-
-        setFiltered(result);
-    }
+        });
+    }, [collaborators, filters]);
 
     if (loading) {
         return (
@@ -126,15 +47,11 @@ export default function CollaboratorListPage() {
 
     return (
         <Box p={6}>
-            {/* HEADER */}
             <HStack justify="space-between" mb={6}>
                 <Heading size="lg">Collaborateurs</Heading>
 
-                <HStack spacing={3}>
-                    <Button
-                        colorScheme="orange"
-                        onClick={fetchNonAffectes}
-                    >
+                <HStack>
+                    <Button colorScheme="orange" onClick={fetchNonAffectes}>
                         Non affectés
                     </Button>
 
@@ -148,17 +65,7 @@ export default function CollaboratorListPage() {
             </HStack>
 
             {/* FILTRES */}
-            <Box
-                mb={6}
-                p={4}
-                borderWidth="1px"
-                borderRadius="lg"
-                bg="gray.50"
-            >
-                <Text fontWeight="bold" mb={3}>
-                    Recherche
-                </Text>
-
+            <Box mb={6} p={4} borderWidth="1px" borderRadius="lg" bg="gray.50">
                 <Stack direction={{ base: "column", md: "row" }} spacing={3}>
                     <Input
                         placeholder="Nom"
@@ -198,17 +105,12 @@ export default function CollaboratorListPage() {
                             borderWidth="1px"
                             borderRadius="lg"
                             cursor="pointer"
-                            _hover={{
-                                shadow: "md",
-                                transform: "translateY(-2px)",
-                            }}
-                            transition="0.2s"
+                            _hover={{ shadow: "md", transform: "translateY(-2px)" }}
                             onClick={() => navigate(`/collaborators/${c.id}`)}
                         >
                             <Text fontWeight="bold">
-                                {c.lastName} - {c.firstName}
+                                {c.lastName} {c.firstName}
                             </Text>
-
                             <Text fontSize="sm" color="gray.600">
                                 {c.email}
                             </Text>

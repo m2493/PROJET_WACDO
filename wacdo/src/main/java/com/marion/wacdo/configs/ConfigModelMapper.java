@@ -1,9 +1,11 @@
 package com.marion.wacdo.configs;
 
 import com.marion.wacdo.dto.CollaboratorDTO;
+import com.marion.wacdo.dto.JobDTO;
 import com.marion.wacdo.entities.Affectation;
 import com.marion.wacdo.dto.AffectationDTO;
 import com.marion.wacdo.entities.Collaborator;
+import com.marion.wacdo.entities.Job;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeMap;
 import org.springframework.context.annotation.Bean;
@@ -44,6 +46,13 @@ public class ConfigModelMapper {
                 .addMappings(mapper -> {
                     mapper.skip(Collaborator::setId); // 
                 });
+
+
+
+            modelMapper.typeMap(JobDTO.class, Job.class)
+                    .addMappings(mapper -> mapper.skip(Job::setId));
+
+
 
         return modelMapper;
 

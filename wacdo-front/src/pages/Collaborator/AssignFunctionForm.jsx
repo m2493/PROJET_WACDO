@@ -10,6 +10,8 @@ import {
     Text,
 } from "@chakra-ui/react";
 
+
+
 export default function AssignCollaboratorForm({ onAssign }) {
     const [collaborators, setCollaborators] = useState([]);
     const [jobs, setJobs] = useState([]);
@@ -47,6 +49,10 @@ export default function AssignCollaboratorForm({ onAssign }) {
             <Stack spacing={4}>
                 <Text fontWeight="bold">
                     Nouvelle affectation
+                </Text>
+
+                <Text>
+                    {collaboratorId} | {jobId} | {startDate}
                 </Text>
 
                 {/* COLLAB */}

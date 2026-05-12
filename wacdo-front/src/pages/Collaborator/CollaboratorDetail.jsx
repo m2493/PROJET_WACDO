@@ -1,6 +1,5 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import api from "../../api/axios";
 
 import {
   Box,
@@ -16,38 +15,64 @@ import {
   HStack,
 } from "@chakra-ui/react";
 
+import { useCollaborators } from "../../hooks/useCollaborators";
+import { useCollaboratorAffectations } from "../../hooks/useCollaboratorAffectations";
+
 export default function CollaboratorDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const [collaborator, setCollaborator] = useState(null);
-  const [affectations, setAffectations] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { data: collaborators, loading: loadingCollab } =
+      useCollaborators();
+
+  const { data: affectations, loading: loadingAff } =
+      useCollaboratorAffectations(id);
 
   const [jobFilter, setJobFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const loading = loadingCollab || loadingAff;
 
-  async function fetchData() {
-    try {
-      const collabRes = await api.get("/api/collaborators");
-      const collab = collabRes.data.find((c) => c.id == id);
+  // récup collaborateur depuis la liste globale
+  const collaborator = useMemo(() => {
+    return collaborators.find((c) => c.id == id);
+  }, [collaborators, id]);
 
-      const affRes = await api.get(
-          `/api/affectations/collaborator/${id}`
-      );
+  const filtered = useMemo(() => {
+    return affectations.filter((a) => {
+      const matchJob =
+          jobFilter === "" ||
+          a.jobTitle?.toLowerCase().includes(jobFilter.toLowerCase());
 
-      setCollaborator(collab);
-      setAffectations(affRes.data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }
+      const matchDate =
+          dateFilter === "" ||
+          a.startDateAffectation === dateFilter;
+
+      return matchJob && matchDate;
+    });
+  }, [affectations, jobFilter, dateFilter]);
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const current = useMemo(
+      () =>
+          filtered.filter(
+              (a) =>
+                  !a.endDateAffectation ||
+                  a.endDateAffectation >= today
+          ),
+      [filtered, today]
+  );
+
+  const history = useMemo(
+      () =>
+          filtered.filter(
+              (a) =>
+                  a.endDateAffectation &&
+                  a.endDateAffectation < today
+          ),
+      [filtered, today]
+  );
 
   if (loading) {
     return (
@@ -65,44 +90,13 @@ export default function CollaboratorDetailPage() {
     );
   }
 
-  const filtered = affectations.filter((a) => {
-    const matchJob =
-        jobFilter === "" ||
-        a.jobTitle?.toLowerCase().includes(jobFilter.toLowerCase());
-
-    const matchDate =
-        dateFilter === "" || a.startDateAffectation === dateFilter;
-
-    return matchJob && matchDate;
-  });
-
-  const today = new Date().toISOString().split("T")[0];
-
-  const current = filtered.filter(
-      (a) =>
-          !a.endDateAffectation ||
-          a.endDateAffectation >= today
-  );
-
-  const history = filtered.filter(
-      (a) =>
-          a.endDateAffectation &&
-          a.endDateAffectation < today
-  );
-
   return (
       <Box p={6}>
-        {/* HEADER COLLAB */}
-        <Box
-            p={5}
-            borderWidth="1px"
-            borderRadius="lg"
-            mb={6}
-        >
+        {/* HEADER */}
+        <Box p={5} borderWidth="1px" borderRadius="lg" mb={6}>
           <Heading size="md">
             {collaborator.lastName} {collaborator.firstName}
           </Heading>
-
           <Text color="gray.600">{collaborator.email}</Text>
         </Box>
 
@@ -137,15 +131,9 @@ export default function CollaboratorDetailPage() {
 
           <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
             {current.map((a) => (
-                <Box
-                    key={a.id}
-                    p={4}
-                    borderWidth="1px"
-                    borderRadius="lg"
-                >
+                <Box key={a.id} p={4} borderWidth="1px" borderRadius="lg">
                   <HStack justify="space-between">
                     <Text fontWeight="bold">{a.jobTitle}</Text>
-
                     <Badge colorScheme="green">Actif</Badge>
                   </HStack>
 
@@ -185,13 +173,11 @@ export default function CollaboratorDetailPage() {
                 >
                   <HStack justify="space-between">
                     <Text fontWeight="bold">{a.jobTitle}</Text>
-
                     <Badge colorScheme="gray">Terminé</Badge>
                   </HStack>
 
                   <Text fontSize="sm" color="gray.600" mt={2}>
-                    Du {a.startDateAffectation} au{" "}
-                    {a.endDateAffectation}
+                    Du {a.startDateAffectation} au {a.endDateAffectation}
                   </Text>
 
                   <Button
