@@ -1,8 +1,11 @@
 import axios from "axios";
 
-const api = axios.create({
+/*const api = axios.create({
   baseURL: "http://localhost:8080",
-});
+  baseURL: "",
+});*/
+
+const api = axios.create();
 
 api.interceptors.request.use((config) => { /*ajout automatique du JWT
 pas besoin de répéter dans chaque appel API*/
