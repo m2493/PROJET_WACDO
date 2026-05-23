@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../../api/axios";
 
 import {
@@ -60,6 +60,10 @@ export default function AffectationSearchPage() {
         });
         setResults([]);
     }
+
+    useEffect(() => {
+        handleSearch();
+    }, []);
 
     return (
         <VStack spacing={8} align="stretch" p={6}>
