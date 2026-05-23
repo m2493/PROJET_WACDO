@@ -16,8 +16,6 @@ public interface CollaboratorService {
 
     CollaboratorCreateDTO create(CollaboratorCreateDTO dto);
 
-    //CollaboratorCreateDTO update(Long id, CollaboratorCreateDTO dto);
-
     CollaboratorDTO update(Long id, CollaboratorDTO collaboratorDTO);
 
     public void delete(Long id);

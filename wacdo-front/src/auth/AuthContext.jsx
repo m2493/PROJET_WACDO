@@ -15,7 +15,6 @@ export function AuthProvider({ children }) {
             motDePasse,
         });
 
-        // 🚫 NON ADMIN
         if (!response.data.admin) {
             throw new Error("NOT_ADMIN");
         }
@@ -39,7 +38,7 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(false);
   };
 
-  // SAFE PARSE (IMPORTANT)
+
   let user = null;
   try {
     user = JSON.parse(localStorage.getItem("user"));

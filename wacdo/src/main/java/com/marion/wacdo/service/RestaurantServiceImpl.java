@@ -30,14 +30,25 @@ public class RestaurantServiceImpl implements RestaurantService {
         this.modelMapper = modelMapper;
     }
 
-    // Liste de tous les restaurants
+    /**
+     * Liste de tous les restaurants
+     * @return list
+     */
     public List<RestaurantDTO> getAll() {
         return restaurantRepository.findAll().stream()
                 .map(r -> modelMapper.map(r, RestaurantDTO.class))
                 .toList();
     }
 
-    // Détail d’un restaurant avec collaborateurs en poste
+
+    /**
+     * Détail d’un restaurant avec collaborateurs en poste
+     * @param restaurantId
+     * @param jobTitle
+     * @param firstName
+     * @param startDate
+     * @return
+     */
     public RestaurantDTO getDetail(Long restaurantId,
                                    String jobTitle,
                                    String firstName,
@@ -69,14 +80,25 @@ public class RestaurantServiceImpl implements RestaurantService {
         return dto;
     }
 
-    // Recherche de restaurants
+
+    /**
+     * Recherche de restaurants
+     * @param name
+     * @param city
+     * @param postalCode
+     * @return
+     */
     public List<RestaurantDTO> search(String name, String city, String postalCode) {
         return restaurantRepository.search(name, city, postalCode).stream()
                 .map(r -> modelMapper.map(r, RestaurantDTO.class))
                 .toList();
     }
 
-    // Création d’un restaurant
+    /**
+     * Création d’un restaurant
+     * @param restaurant
+     * @return
+     */
     public RestaurantDTO create(Restaurant restaurant) {
         Restaurant saved = restaurantRepository.save(restaurant);
         return modelMapper.map(saved, RestaurantDTO.class);

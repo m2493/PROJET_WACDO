@@ -11,10 +11,17 @@ import java.util.List;
 @Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
 
-    // Recherche flexible par nom, ville, code postal
-    // On filtre sur name, city, postalCode.
-    // Si un filtre est null, il est ignoré.
 
+
+    /**
+     * Recherche flexible par nom, ville, code postal
+     * On filtre sur name, city, postalCode.
+     * Si un filtre est null, il est ignoré.
+     * @param name
+     * @param city
+     * @param postalCode
+     * @return List
+     */
     @Query("""
         SELECT r FROM Restaurant r
         WHERE (:name IS NULL OR LOWER(r.name) LIKE LOWER(CONCAT('%', :name, '%')))

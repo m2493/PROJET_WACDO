@@ -15,7 +15,7 @@ function Navbar() {
     const { logout, isAuthenticated, user } = useContext(AuthContext);
     const isAdmin = user?.admin;
 
-    // 🔐 PAS ADMIN → PAS DE NAVBAR
+    // Pas de Navbar si pas admin
     if (!isAuthenticated || !isAdmin) return null;
 
     const handleLogout = () => {

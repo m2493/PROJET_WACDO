@@ -43,6 +43,8 @@ public class CollaboratorControllerSecurityTest {
     private JwtRequestFilter jwtRequestFilter;
 
     // ------------------ GET /api/collaborators ------------------
+
+
     @Test
     @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
     void adminCanGetAllCollaborators() throws Exception {

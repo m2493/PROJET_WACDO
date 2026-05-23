@@ -24,7 +24,7 @@ import EditAffectationPage from "./pages/Affectation/EditAffectationPage";
 
 import Navbar from "./pages/Navbar";
 
-/* 🔥 Wrapper pour gérer la logique auth + navbar */
+/* Wrapper pour gérer la logique auth + navbar */
 function AppLayout() {
     const { isAuthenticated } = useContext(AuthContext);
 

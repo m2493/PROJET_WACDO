@@ -21,6 +21,7 @@ public class CollaboratorController {
 
 
      @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
+
     public ResponseEntity<List<CollaboratorDTO>> rechercher(
             @RequestParam(required = false) String nom,
             @RequestParam(required = false) String prenom,
@@ -33,9 +34,6 @@ public class CollaboratorController {
                 .body(result);
     }
 
-    // ------------------ GET /api/collaborators/non-affectes ------------------
-
-
     @GetMapping(value = "/non-affectes", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<CollaboratorDTO>> nonAffectes() {
         List<CollaboratorDTO> result = service.getCollaboratorsNonAffectes();
@@ -45,14 +43,14 @@ public class CollaboratorController {
                 .body(result);
     }
 
-    // ------------------ POST /api/collaborators ------------------
+
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CollaboratorCreateDTO> create(@RequestBody CollaboratorCreateDTO dto) {
         CollaboratorCreateDTO created = service.create(dto);
         return ResponseEntity.ok(created);
     }
 
-    // ------------------ PUT /api/collaborators/{id} ------------------
+
     @PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CollaboratorDTO> update(
             @PathVariable Long id,
@@ -62,7 +60,7 @@ public class CollaboratorController {
         return ResponseEntity.ok(updated);
     }
 
-    // ------------------ DELETE /api/collaborators/{id} ------------------
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);

@@ -12,18 +12,35 @@ import java.util.List;
 
 public interface AffectationRepository extends JpaRepository<Affectation, Long> {
 
-    // Vérifie si un collaborateur a déjà une affectation en cours
+    /**
+     * Vérifie si un collaborateur a déjà une affectation en cours
+     * @param collaboratorId Long
+     * @return boolean
+     */
     boolean existsByCollaboratorIdAndEndDateAffectationIsNull(Long collaboratorId);
 
 
-    // Affectations d’un collaborateur
+    /**
+     * Retourne les affectations d’un collaborateur
+     * @param collaboratorId Long
+     * @return List
+     */
     @Query("SELECT a FROM Affectation a WHERE a.collaborator.id = :collaboratorId")
     List<Affectation> findByCollaborator(@Param("collaboratorId") Long collaboratorId);
 
 
 
-    //Permet de filtrer la liste des collaborateurs en poste directement.
-    // Pour lister les collaborateurs en poste ou filtrer par poste/date :
+
+
+    /**
+     * Permet de filtrer la liste des collaborateurs en poste directement.
+     * Pour lister les collaborateurs en poste ou filtrer par poste/date :
+     * @param restaurantId
+     * @param jobTitle
+     * @param firstName
+     * @param startDate
+     * @return List
+     */
     @Query("""
     SELECT a FROM Affectation a
     JOIN a.collaborator c
@@ -41,13 +58,22 @@ public interface AffectationRepository extends JpaRepository<Affectation, Long> 
             @Param("startDate") LocalDate startDate
     );
 
-
-    // Collaborateurs en poste dans un restaurant
+    /**
+     * Collaborateurs en poste dans un restaurant
+     * @param restaurantId Long
+     * @return List
+     */
     @Query("SELECT a FROM Affectation a WHERE a.restaurant.id = :restaurantId AND a.endDateAffectation IS NULL")
     List<Affectation> findCurrentByRestaurant(@Param("restaurantId") Long restaurantId);
 
-
-    // Recherche avec filtres : poste, dates, ville
+    /**
+     * Recherche avec filtres : poste, dates, ville
+     * @param jobTitle
+     * @param startDate
+     * @param endDate
+     * @param city
+     * @return
+     */
     @Query("""
         SELECT a FROM Affectation a
         JOIN a.job j
@@ -64,5 +90,12 @@ public interface AffectationRepository extends JpaRepository<Affectation, Long> 
             @Param("city") String city
     );
 
+    /**
+     * Affectations en cours
+     * @param collaboratorId
+     * @param restaurantId
+     * @param jobId
+     * @return boolean
+     */
     boolean existsByCollaboratorIdAndRestaurantIdAndJobIdAndEndDateAffectationIsNull(@NotNull Long collaboratorId, @NotNull Long restaurantId, @NotNull Long jobId);
 }

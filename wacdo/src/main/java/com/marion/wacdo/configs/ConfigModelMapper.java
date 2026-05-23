@@ -40,7 +40,7 @@ public class ConfigModelMapper {
         });
 
         // ---------------------------
-        // COLLABORATOR DTO -> ENTITY (UPDATE SAFE)
+        // COLLABORATOR DTO -> ENTITY (Ne pas prendre en compte l'ID)
         // ---------------------------
         modelMapper.typeMap(CollaboratorDTO.class, Collaborator.class)
                 .addMappings(mapper -> {

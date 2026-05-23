@@ -13,7 +13,7 @@ import {
 import FormInput from "../../components/forms/FormInput";
 import { useJobs } from "../../hooks/useJobs";
 
-// 🔥 factorisation règle
+// factorisation règle
 const noOnlyNumbers = (label) =>
     Yup.string()
         .required(`${label} est requis`)

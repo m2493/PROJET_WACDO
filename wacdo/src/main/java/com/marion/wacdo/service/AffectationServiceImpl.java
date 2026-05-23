@@ -38,6 +38,7 @@ public class AffectationServiceImpl implements AffectationService {
     }
 
     // --- Récupérer toutes les affectations ---
+
     @Override
     public List<AffectationDTO> getAll() {
         return affectationRepository.findAll().stream()
@@ -45,7 +46,11 @@ public class AffectationServiceImpl implements AffectationService {
                 .toList();
     }
 
-    // --- Récupérer détail d'une affectation ---
+    /**
+     * Récupérer détail d'une affectation
+     * @param id Long
+     * @return
+     */
     @Override
     public AffectationDTO getDetail(Long id) {
         Affectation a = affectationRepository.findById(id)
@@ -53,7 +58,14 @@ public class AffectationServiceImpl implements AffectationService {
         return modelMapper.map(a, AffectationDTO.class);
     }
 
-    // --- Recherche avec filtres ---
+    /**
+     * Recherche avec filtres
+     * @param jobTitle
+     * @param start
+     * @param end
+     * @param city
+     * @return List
+     */
     @Override
     public List<AffectationDTO> search(String jobTitle, LocalDate start, LocalDate end, String city) {
         return affectationRepository.search(jobTitle, start, end, city).stream()
@@ -61,7 +73,11 @@ public class AffectationServiceImpl implements AffectationService {
                 .toList();
     }
 
-    // --- Affectations par collaborateur ---
+    /**
+     * Affectations par collaborateur
+     * @param collaboratorId
+     * @return List
+     */
     @Override
     public List<AffectationDTO> getByCollaborator(Long collaboratorId) {
         return affectationRepository.findByCollaborator(collaboratorId).stream()
@@ -69,7 +85,11 @@ public class AffectationServiceImpl implements AffectationService {
                 .toList();
     }
 
-    // --- Affectations en cours par restaurant ---
+    /**
+     * Affectations en cours par restaurant
+     * @param restaurantId
+     * @return List
+     */
     @Override
     public List<AffectationDTO> getCurrentByRestaurant(Long restaurantId) {
         return affectationRepository.findCurrentByRestaurant(restaurantId).stream()
@@ -77,7 +97,11 @@ public class AffectationServiceImpl implements AffectationService {
                 .toList();
     }
 
-    // --- Création d'une affectation ---
+    /**
+     * Création d'une affectation
+     * @param dto
+     * @return
+     */
     @Override
     public AffectationDTO create(AffectationCreateDTO dto) {
 
@@ -89,11 +113,6 @@ public class AffectationServiceImpl implements AffectationService {
 
         var job = jobRepository.findById(dto.getJobId())
                 .orElseThrow(() -> new RuntimeException("Job not found"));
-
-        /*// Vérifie qu'il n'y a pas déjà une affectation active
-        if (affectationRepository.existsByCollaboratorIdAndEndDateAffectationIsNull(collaborator.getId())) {
-            throw new RuntimeException("Collaborator already has an active assignment");
-        }*/
 
         boolean exists =
                 affectationRepository.existsByCollaboratorIdAndRestaurantIdAndJobIdAndEndDateAffectationIsNull(
@@ -117,7 +136,12 @@ public class AffectationServiceImpl implements AffectationService {
         return modelMapper.map(saved, AffectationDTO.class);
     }
 
-    // --- Modification d'une affectation ---
+    /**
+     * Modification d'une affectation
+     * @param id
+     * @param dto
+     * @return
+     */
     @Override
     public AffectationDTO update(Long id, AffectationDTO dto) {
         Affectation existing = affectationRepository.findById(id)
@@ -148,7 +172,10 @@ public class AffectationServiceImpl implements AffectationService {
         return modelMapper.map(saved, AffectationDTO.class);
     }
 
-    // --- Suppression d'une affectation ---
+    /**
+     * Suppression d'une affectation
+     * @param id
+     */
     @Override
     public void delete(Long id) {
 

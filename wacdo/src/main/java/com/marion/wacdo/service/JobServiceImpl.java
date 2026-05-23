@@ -35,8 +35,6 @@ public class JobServiceImpl implements JobService {
         return modelMapper.map(savedJob, JobDTO.class); // Entité -> DTO
     }
 
-    // Mise à jour
-    // Mise à jour
     @Override
     @Transactional
     public JobDTO update(Long id, JobDTO jobDTO) {
@@ -52,7 +50,6 @@ public class JobServiceImpl implements JobService {
         return modelMapper.map(updatedJob, JobDTO.class);
     }
 
-    // Suppression
     @Override
     public void delete(Long id) {
 
