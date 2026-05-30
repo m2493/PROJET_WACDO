@@ -3,6 +3,7 @@ package com.marion.wacdo.service;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -11,8 +12,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtilService {
-
-    private final String secret = "my-super-secret-key-that-is-at-least-32-bytes!";
+    @Value("${JWT_SECRET}")
+    private String secret;
 
     public String generateToken(UserDetails userDetails) {
 

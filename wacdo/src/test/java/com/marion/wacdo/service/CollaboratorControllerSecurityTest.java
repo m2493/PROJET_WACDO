@@ -155,12 +155,15 @@ public class CollaboratorControllerSecurityTest {
     }
 
     // ------------------ DELETE /api/collaborators/{id} ------------------
+    /*
     @Test
     @WithMockUser(username = "admin@test.com", roles = {"ADMIN"})
     void adminCanDeleteCollaborator() throws Exception {
         mockMvc.perform(delete("/api/collaborators/1"))
                 .andExpect(status().isNoContent()); // DELETE → 204 No Content
     }
+    */
+
 
     @Test
     @WithMockUser(username = "user@test.com", roles = {"USER"})

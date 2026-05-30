@@ -1,72 +1,93 @@
 package com.marion.wacdo.service;
 
 import com.marion.wacdo.dto.JobDTO;
+import com.marion.wacdo.entities.Job;
 import com.marion.wacdo.repository.JobRepository;
+import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
-public class JobServiceImplIntegrationTest {
-
+@ActiveProfiles("test")
+@Transactional
+class JobServiceImplIntegrationTest {
     @Autowired
     private JobService jobService;
 
     @Autowired
     private JobRepository jobRepository;
 
-    /*@Test
-    void shouldCreateJob() {
-        JobDTO dto = new JobDTO();
-        dto.setLabelFunction("Serveur");
+    private Job job1;
+    private Job job2;
 
-        JobDTO result = jobService.create(dto);
+    @BeforeEach
+    void setUp() {
+        jobRepository.deleteAll();
 
-        assertThat(result.getId()).isNotNull();
-        assertThat(result.getLabelFunction()).isEqualTo("Serveur");
+        job1 = createJob("Serveur");
+        job2 = createJob("Cuisinier");
+    }
+
+    private Job createJob(String title) {
+        Job job = new Job();
+        job.setLabelFunction(title);
+
+        Job saved = jobRepository.save(job);
+        assertNotNull(saved.getId());
+
+        return saved;
     }
 
     @Test
-    void shouldFindAllJobs() {
+    void shouldCreateJob() {
+
         JobDTO dto = new JobDTO();
-        dto.setName("Manager");
+        dto.setLabelFunction("Manager");
 
-        jobService.create(dto);
+        JobDTO result = jobService.create(dto);
 
-        List<JobDTO> jobs = jobService.rechercher();
+        assertNotNull(result);
+        assertEquals("Manager", result.getLabelFunction());
 
-        assertThat(jobs).isNotEmpty();
+        List<Job> jobs = jobRepository.findAll();
+        assertEquals(3, jobs.size());
     }
 
     @Test
     void shouldUpdateJob() {
+
         JobDTO dto = new JobDTO();
-        dto.setName("Old Job");
+        dto.setLabelFunction("Chef cuisinier");
 
-        JobDTO created = jobService.create(dto);
+        JobDTO updated = jobService.update(job1.getId(), dto);
 
-        JobDTO updatedDto = new JobDTO();
-        updatedDto.setName("New Job");
+        assertEquals("Chef cuisinier", updated.getLabelFunction());
 
-        JobDTO result = jobService.update(created.getId(), updatedDto);
-
-        assertThat(result.getName()).isEqualTo("New Job");
+        Job entity = jobRepository.findById(job1.getId()).orElseThrow();
+        assertEquals("Chef cuisinier", entity.getLabelFunction());
     }
 
     @Test
     void shouldDeleteJob() {
-        JobDTO dto = new JobDTO();
-        dto.setName("ToDelete");
 
-        JobDTO created = jobService.create(dto);
+        jobService.delete(job1.getId());
 
-        jobService.delete(created.getId());
+        assertFalse(jobRepository.existsById(job1.getId()));
+    }
 
-        assertThat(jobRepository.findById(created.getId())).isEmpty();
-    }*/
+    @Test
+    void shouldReturnAllJobs() {
+
+        List<JobDTO> result = jobService.rechercher();
+
+        assertEquals(2, result.size());
+    }
+
 }
-
